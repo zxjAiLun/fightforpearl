@@ -119,7 +119,7 @@ class TestSkillExecutor:
         assert skill.type == SkillType.SPECIAL
 
     def test_special_damage_higher_than_basic(self):
-        """战技伤害应高于普攻"""
+        """战技伤害应高于普攻（比较基础伤害，不受暴击影响）"""
         char = _char_with_skills("姬子")
         enemy = _char_with_skills("丹恒")
         executor = SkillExecutor()
@@ -136,11 +136,12 @@ class TestSkillExecutor:
         special_results = executor.execute(special, char2, [enemy])
         _, special_result = special_results[0]
 
-        # 战技 1.5x vs 普攻 1.0x，伤害应更高
-        assert special_result.final_damage > basic_result.final_damage
+        # 比较 base_damage（ATK × multiplier），不受暴击随机性影响
+        # 战技 1.5x vs 普攻 1.0x
+        assert special_result.base_damage > basic_result.base_damage
 
     def test_ult_damage_higher_than_special(self):
-        """大招伤害应高于战技"""
+        """大招伤害应高于战技（比较基础伤害，不受暴击影响）"""
         char = _char_with_skills("姬子")
         enemy = _char_with_skills("丹恒")
         executor = SkillExecutor()
@@ -158,7 +159,8 @@ class TestSkillExecutor:
         special_results = executor.execute(special, char2, [enemy])
         _, special_result = special_results[0]
 
-        assert ult_result.final_damage > special_result.final_damage
+        # 比较 base_damage，大招 3.0x vs 战技 1.5x
+        assert ult_result.base_damage > special_result.base_damage
 
     def test_energy_deduct_special(self):
         """使用战技后能量 -1"""

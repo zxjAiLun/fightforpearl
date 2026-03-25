@@ -8,6 +8,7 @@ import os
 from .models import (
     Character, BattleState, Element, Skill, SkillType,
     Passive, Effect, BreakEffectType, ELEMENT_BREAK_MAP, Stat,
+    DamageSource, FollowUpRule,
 )
 from .damage import calculate_damage, apply_damage, DamageResult, calculate_break_damage
 from .skill import SkillExecutor, build_skills_from_json, assign_default_skills, assign_default_passives
@@ -262,6 +263,9 @@ class BattleEngine:
                 target_status.entangle_hit_stacks = min(5, target_status.entangle_hit_stacks + 1)
                 target.entangle_hit_stacks = target_status.entangle_hit_stacks
 
+        # 触发追击
+        self._try_follow_up(actor, skill, results)
+
     def _try_break(self, target: Character, attacker: Character, skill: Skill) -> str:
         """
         检查技能攻击是否触发弱点击破。
@@ -303,10 +307,80 @@ class BattleEngine:
         msg = f"【击破！{br.detail}】造成 {br.break_damage} 击破伤害"
         return msg
 
+    def _try_follow_up(
+        self,
+        actor: Character,
+        skill: Skill,
+        results: list[tuple[Character, DamageResult]],
+    ) -> None:
+        """
+        追击处理：
+        在主动技能造成伤害后，检查角色是否有追击规则满足条件。
+        追击是独立行动，消耗回合但不回复能量。
+        """
+        import random
+
+        if not results:
+            return
+
+        triggered_any = False
+        for rule in actor.follow_up_rules:
+            # 检查触发条件：释放了指定类型的技能
+            if rule.trigger_skill_type != skill.type:
+                continue
+
+            # 概率判定
+            if random.random() > rule.chance:
+                continue
+
+            # 找到追击目标（优先第一个受伤目标）
+            target = results[0][0]
+
+            # 查找追击技能
+            follow_up_skill = None
+            for s in actor.skills:
+                if s.name == rule.follow_up_skill_name:
+                    follow_up_skill = s
+                    break
+
+            if follow_up_skill is None:
+                # 没有找到指定技能，使用普攻作为追击
+                for s in actor.skills:
+                    if s.type == SkillType.BASIC:
+                        follow_up_skill = s
+                        break
+
+            if follow_up_skill is None:
+                continue
+
+            # 执行追击
+            multiplier = rule.multiplier
+            dmg_result = calculate_damage(
+                actor, target,
+                skill_multiplier=multiplier,
+                damage_type=rule.damage_type,
+                damage_source=DamageSource.FOLLOW_UP,
+            )
+            apply_damage(actor, target, dmg_result)
+
+            self._log(BattleEvent(
+                turn=self.state.turn,
+                actor=actor,
+                action="FOLLOW_UP",
+                detail=f"{actor.name} 追击！对 {target.name} 造成 {dmg_result.final_damage} 追击伤害"
+                    + (" ⚡暴击！" if dmg_result.is_crit else ""),
+                damage_result=dmg_result,
+            ))
+            triggered_any = True
+
+        if triggered_any:
+            # 追击后，该角色本回合不再行动（追击是独立行动）
+            # 注意：追击本身不消耗回合，它只是回合内的一个额外行动
+            pass
+
 
 def create_default_character(name: str, element: Element = Element.PHYSICAL) -> Character:
     """创建默认角色（用于测试）"""
-    from .models import Stat
     stat = Stat(
         base_max_hp=1000,
         base_atk=100,

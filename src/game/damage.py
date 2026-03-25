@@ -10,7 +10,7 @@ import random
 from dataclasses import dataclass
 from typing import Optional
 
-from .models import Character, Element, Effect, BreakDot, BreakEffectType
+from .models import Character, Element, Effect, BreakDot, BreakEffectType, DamageSource
 
 
 @dataclass
@@ -23,6 +23,7 @@ class DamageResult:
     def_reduction: float
     dmg_pct_total: float
     vuln_multiplier: float
+    damage_source: DamageSource = DamageSource.BASIC
     break_triggered: bool = False
     break_result: Optional[object] = None
     resisted: bool = False
@@ -63,6 +64,7 @@ def calculate_damage(
     damage_type: Optional[Element] = None,
     ignore_def: float = 0.0,
     fixed_damage: int = 0,
+    damage_source: DamageSource = DamageSource.BASIC,
 ) -> DamageResult:
     """
     伤害计算主公式
@@ -110,6 +112,7 @@ def calculate_damage(
         def_reduction=round(def_reduction, 4),
         dmg_pct_total=round(total_dmg_pct - 1, 4),
         vuln_multiplier=round(total_vuln - 1, 4),
+        damage_source=damage_source,
     )
 
 

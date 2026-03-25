@@ -25,6 +25,36 @@ class SkillType(Enum):
     ABILITY_PASSIVE = auto() # 能力（被动）
 
 
+class DamageSource(Enum):
+    """
+    伤害来源类型
+    用于伤害统计和追击触发判定
+    """
+    BASIC = auto()      # 普通攻击
+    SPECIAL = auto()    # 战技
+    ULT = auto()       # 终结技
+    BREAK_DOT = auto()  # 击破持续伤害
+    FOLLOW_UP = auto()  # 追击
+    COUNTER = auto()    # 反击
+
+
+@dataclass
+class FollowUpRule:
+    """
+    追击触发规则
+
+    追击触发后，使用指定技能对目标造成伤害。
+    追击是独立行动，消耗回合但不回复能量。
+    """
+    name: str
+    trigger_skill_type: SkillType  # 在释放某类技能后触发
+    chance: float = 0.5            # 触发概率 0-1
+    follow_up_skill_name: str = ""  # 使用的技能名（从 character.skills 中查找）
+    multiplier: float = 0.5         # 追击倍率（相对于普攻）
+    damage_type: Element = Element.PHYSICAL
+    description: str = ""
+
+
 class BreakEffectType(Enum):
     """弱点击破效果类型"""
     NONE = auto()           # 无击破效果
@@ -147,6 +177,9 @@ class Character:
     frozen_turns: int = 0           # 冻结回合数 >0 则无法行动
     action_delay: float = 0.0       # 行动延后值（行动时清零）
     entangle_hit_stacks: int = 0    # 纠缠受击增伤层数（受击时+1，上限5）
+
+    # --- 追击规则 ---
+    follow_up_rules: list = field(default_factory=list)  # 追击触发规则
 
     def is_alive(self) -> bool:
         return self.current_hp > 0

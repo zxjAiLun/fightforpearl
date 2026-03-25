@@ -2,7 +2,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Optional
 
-from .models import Character, Skill, SkillType, Element, Passive, Effect, BreakEffectType, ELEMENT_BREAK_MAP
+from .models import Character, Skill, SkillType, Element, Passive, Effect, BreakEffectType, ELEMENT_BREAK_MAP, DamageSource
 
 if TYPE_CHECKING:
     from .damage import DamageResult
@@ -58,6 +58,7 @@ class SkillExecutor:
                 caster, target,
                 skill_multiplier=eff_mult,
                 damage_type=skill.damage_type,
+                damage_source=DamageSource.BASIC,
             )
             apply_damage(caster, target, result)
             results.append((target, result))
@@ -83,6 +84,7 @@ class SkillExecutor:
                 caster, target,
                 skill_multiplier=eff_mult,
                 damage_type=skill.damage_type,
+                damage_source=DamageSource.SPECIAL,
             )
             apply_damage(caster, target, result)
             results.append((target, result))
@@ -110,6 +112,7 @@ class SkillExecutor:
                 caster, target,
                 skill_multiplier=eff_mult,
                 damage_type=skill.damage_type,
+                damage_source=DamageSource.ULT,
             )
             apply_damage(caster, target, result)
             results.append((target, result))
