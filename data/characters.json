@@ -1,0 +1,74 @@
+{
+  "presets": [
+    {
+      "name": "穹",
+      "element": "PHYSICAL",
+      "stat": {
+        "max_hp": 1200,
+        "atk": 120,
+        "def": 80,
+        "spd": 105,
+        "crit_rate": 0.05,
+        "crit_dmg": 1.5,
+        "effect_hit": 0.0,
+        "effect_res": 0.0
+      }
+    },
+    {
+      "name": "三月七",
+      "element": "ICE",
+      "stat": {
+        "max_hp": 1100,
+        "atk": 100,
+        "def": 100,
+        "spd": 95,
+        "crit_rate": 0.05,
+        "crit_dmg": 1.5,
+        "effect_hit": 0.2,
+        "effect_res": 0.1
+      }
+    },
+    {
+      "name": "丹恒",
+      "element": "WIND",
+      "stat": {
+        "max_hp": 1000,
+        "atk": 140,
+        "def": 60,
+        "spd": 120,
+        "crit_rate": 0.12,
+        "crit_dmg": 1.6,
+        "effect_hit": 0.0,
+        "effect_res": 0.05
+      }
+    },
+    {
+      "name": "姬子",
+      "element": "FIRE",
+      "stat": {
+        "max_hp": 900,
+        "atk": 160,
+        "def": 50,
+        "spd": 110,
+        "crit_rate": 0.15,
+        "crit_dmg": 1.8,
+        "effect_hit": 0.0,
+        "effect_res": 0.0
+      }
+    },
+    {
+      "name": "银狼",
+      "element": "QUANTUM",
+      "stat": {
+        "max_hp": 950,
+        "atk": 130,
+        "def": 70,
+        "spd": 115,
+        "crit_rate": 0.08,
+        "crit_dmg": 1.6,
+        "effect_hit": 0.35,
+        "effect_res": 0.2
+      }
+    }
+  ]
+}
