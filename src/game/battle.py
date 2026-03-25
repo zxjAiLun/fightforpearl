@@ -5,9 +5,9 @@ from typing import Callable, Optional
 import json
 import os
 
-from .models import Character, BattleState, Element, Skill, SkillType
-from .damage import calculate_damage, apply_damage, DamageResult
-from .skill import SkillExecutor, build_skills_from_json, assign_default_skills
+from .models import Character, BattleState, Element, Skill, SkillType, Passive, Effect, ELEMENT_BREAK_MAP
+from .damage import calculate_damage, apply_damage, DamageResult, calculate_break_damage
+from .skill import SkillExecutor, build_skills_from_json, assign_default_skills, assign_default_passives
 
 
 @dataclass
@@ -33,7 +33,7 @@ class BattleEngine:
         if skills_data is None:
             skills_data = self._load_skills_data()
         self._skills_data = skills_data
-        self._assign_skills_to_teams()
+        self._assign_skills_and_passives_to_teams()
 
     def _load_skills_data(self) -> list:
         """从 data/skills.json 加载技能数据"""
@@ -44,12 +44,15 @@ class BattleEngine:
                 return json.load(f)
         return []
 
-    def _assign_skills_to_teams(self) -> None:
-        """为队伍中所有角色分配技能"""
+    def _assign_skills_and_passives_to_teams(self) -> None:
+        """为队伍中所有角色分配技能和被动"""
         all_chars = self.state.player_team + self.state.enemy_team
         for char in all_chars:
             if not char.skills:
                 assign_default_skills(char, self._skills_data)
+            # 分配默认被动
+            if not char.passives:
+                assign_default_passives(char)
             # 如果角色没有任何技能，添加默认普攻
             if not char.skills:
                 char.skills.append(Skill(
@@ -82,7 +85,7 @@ class BattleEngine:
         while True:
             # 获取所有存活的角色并按速度排序（SPD 高的先行动）
             alive = [c for c in self.state.player_team + self.state.enemy_team if c.is_alive()]
-            alive.sort(key=lambda c: c.stat.spd, reverse=True)
+            alive.sort(key=lambda c: c.stat.total_spd(), reverse=True)
 
             if not alive:
                 break
@@ -121,18 +124,34 @@ class BattleEngine:
                     actor.current_energy + 1.0,
                 )
 
-                # 清除到期的效果
+                # 清除到期的效果（从属性中移除后再清）
+                for effect in actor.effects:
+                    if effect.turns_remaining <= 0:
+                        effect.remove_from(actor)
                 actor.remove_expired_effects()
 
                 # 当前角色行动
                 self._process_action(actor, alive)
 
-            # 回合结束：所有效果回合数 -1
+            # 回合结束：所有效果回合数 -1，清理
             all_alive = [c for c in self.state.player_team + self.state.enemy_team if c.is_alive()]
             for char in all_alive:
                 for effect in char.effects:
                     effect.turns_remaining -= 1
+                    if effect.turns_remaining <= 0:
+                        effect.remove_from(char)
                 char.remove_expired_effects()
+                char.end_turn_cleanup()
+
+            # 处理击破持续伤害
+            dot_results = self.state.tick_break_effects()
+            for char, dmg in dot_results:
+                self._log(BattleEvent(
+                    turn=self.state.turn,
+                    actor=char,
+                    action="BREAK_DOT",
+                    detail=f"{char.name} 受到击破伤害 {dmg}",
+                ))
 
             self.state.turn += 1
 
@@ -175,13 +194,20 @@ class BattleEngine:
 
 
 def create_default_character(name: str, element: Element = Element.PHYSICAL) -> Character:
-    """创建默认角色（已分配属性，技能待 battle 引擎分配）"""
+    """创建默认角色（已分配属性，技能和被动待 battle 引擎分配）"""
     from .models import Stat
-    return Character(
+    stat = Stat(
+        base_max_hp=1000,
+        base_atk=100,
+        base_def=50,
+        base_spd=100,
+    )
+    char = Character(
         name=name,
         level=1,
         element=element,
-        stat=Stat(max_hp=1000, atk=100, def_=50, spd=100),
-        current_hp=1000,
+        stat=stat,
+        current_hp=stat.total_max_hp(),
         current_energy=0.0,
     )
+    return char

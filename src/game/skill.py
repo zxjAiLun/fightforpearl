@@ -1,8 +1,8 @@
-"""技能系统"""
+"""技能系统 + 被动技能触发"""
 from __future__ import annotations
 from typing import TYPE_CHECKING, Optional
 
-from .models import Character, Skill, SkillType, Element
+from .models import Character, Skill, SkillType, Element, Passive, Effect, BreakDotEffect, ELEMENT_BREAK_MAP
 
 if TYPE_CHECKING:
     from .damage import DamageResult
@@ -25,6 +25,7 @@ class SkillExecutor:
         """
         执行技能，返回 (目标, 伤害结果) 列表。
         不满足能量条件时返回空列表。
+        技能执行后触发对应被动。
         """
         from .damage import calculate_damage, apply_damage
 
@@ -53,6 +54,8 @@ class SkillExecutor:
             )
             apply_damage(caster, target, result)
             results.append((target, result))
+        # 触发普攻被动（如果有）
+        self._trigger_passives(caster, SkillType.BASIC)
         return results
 
     def _execute_special(
@@ -78,6 +81,8 @@ class SkillExecutor:
             results.append((target, result))
 
         caster.current_energy -= self.SPECIAL_COST
+        # 触发战技被动
+        self._trigger_passives(caster, SkillType.SPECIAL)
         return results
 
     def _execute_ult(
@@ -103,7 +108,35 @@ class SkillExecutor:
             results.append((target, result))
 
         caster.current_energy = 0.0
+        # 触发大招被动
+        self._trigger_passives(caster, SkillType.ULT)
         return results
+
+    def _trigger_passives(self, caster: Character, trigger_type: SkillType) -> None:
+        """
+        触发被动技能
+        被动触发后添加对应 BUFF 效果到角色身上，持续指定回合
+        """
+        for passive in caster.passives:
+            if passive.trigger == trigger_type:
+                # 避免同一回合重复触发同名被动
+                if passive.name in caster.passives_triggered_this_turn:
+                    continue
+
+                # 创建 BUFF 效果
+                effect = Effect(
+                    name=passive.name,
+                    turns_remaining=passive.duration,
+                )
+                if passive.effect_type == "dmg_increase":
+                    effect.dmg_pct_bonus = passive.value
+                elif passive.effect_type == "atk_increase":
+                    effect.atk_pct_bonus = passive.value
+
+                # 应用到角色（修改属性）
+                effect.apply_to(caster)
+                caster.effects.append(effect)
+                caster.passives_triggered_this_turn.append(passive.name)
 
     def can_use_skill(self, skill: Skill, caster: Character) -> bool:
         """检查角色是否满足技能释放条件"""
@@ -135,10 +168,7 @@ class SkillExecutor:
 
 
 def build_skills_from_json(data: list[dict]) -> dict[str, list[Skill]]:
-    """
-    从 JSON 数据构建技能字典。
-    返回 {"角色名": [Skill, ...]}
-    """
+    """从 JSON 数据构建技能字典。"""
     result = {}
     for entry in data:
         char_name = entry["character"]
@@ -177,4 +207,28 @@ def assign_default_skills(char: Character, skills_data: list[dict]) -> None:
         cost=0.0,
         multiplier=1.0,
         damage_type=char.element,
+    ))
+
+
+def assign_default_passives(char: Character) -> None:
+    """
+    给角色分配默认被动技能（战技增伤 + 大招加攻）
+    - 被动1：释放战技后，造成伤害+30%，持续2回合
+    - 被动2：释放大招后，攻击力+30%，持续2回合
+    """
+    char.passives.append(Passive(
+        name="战技·增伤",
+        trigger=SkillType.SPECIAL,
+        effect_type="dmg_increase",
+        value=0.30,
+        duration=2,
+        description="释放战技后，造成伤害增加30%，持续2回合",
+    ))
+    char.passives.append(Passive(
+        name="大招·加攻",
+        trigger=SkillType.ULT,
+        effect_type="atk_increase",
+        value=0.30,
+        duration=2,
+        description="释放大招后，攻击力增加30%，持续2回合",
     ))
