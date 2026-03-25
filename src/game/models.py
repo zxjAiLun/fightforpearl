@@ -25,15 +25,17 @@ class SkillType(Enum):
     ABILITY_PASSIVE = auto() # 能力（被动）
 
 
-# 元素克制关系：key 克制 value
+# 元素克制关系：key 克制 value（崩铁循环：物理→风→雷→火→冰→量子→虚数→物理）
+# 即：key 攻击 value 时，key 获得 1.2 倍伤害加成
+# ELEMENT_COUNTER[key] = {被 key 克制的元素}
 ELEMENT_COUNTER = {
-    Element.PHYSICAL: {Element.IMAGINARY},
-    Element.WIND: {Element.PHYSICAL},
-    Element.THUNDER: {Element.WIND},
-    Element.FIRE: {Element.THUNDER},
-    Element.ICE: {Element.FIRE},
-    Element.QUANTUM: {Element.ICE},
-    Element.IMAGINARY: {Element.QUANTUM},
+    Element.PHYSICAL: {Element.WIND},       # 物理克风
+    Element.WIND: {Element.THUNDER},        # 风克雷
+    Element.THUNDER: {Element.FIRE},        # 雷克火
+    Element.FIRE: {Element.ICE},            # 火克冰
+    Element.ICE: {Element.QUANTUM},        # 冰克量子
+    Element.QUANTUM: {Element.IMAGINARY},  # 量子克虚数
+    Element.IMAGINARY: {Element.PHYSICAL}, # 虚数克物理
 }
 
 # 基础属性成长表（每级增加）

@@ -1,0 +1,205 @@
+[
+  {
+    "character": "星",
+    "skills": [
+      {
+        "name": "基础攻击",
+        "type": "BASIC",
+        "cost": 0,
+        "multiplier": 1.0,
+        "damage_type": "PHYSICAL",
+        "description": "普通物理攻击"
+      },
+      {
+        "name": "战技·流星",
+        "type": "SPECIAL",
+        "cost": 1,
+        "multiplier": 1.5,
+        "damage_type": "PHYSICAL",
+        "description": "消耗1点能量，造成1.5倍物理伤害"
+      },
+      {
+        "name": "终结技·陨星",
+        "type": "ULT",
+        "cost": 3,
+        "multiplier": 3.0,
+        "damage_type": "PHYSICAL",
+        "description": "消耗全部能量（≥3），造成3.0倍物理伤害"
+      }
+    ]
+  },
+  {
+    "character": "三月萤",
+    "skills": [
+      {
+        "name": "基础攻击",
+        "type": "BASIC",
+        "cost": 0,
+        "multiplier": 1.0,
+        "damage_type": "WIND",
+        "description": "普通风元素攻击"
+      },
+      {
+        "name": "战技·风舞",
+        "type": "SPECIAL",
+        "cost": 1,
+        "multiplier": 1.5,
+        "damage_type": "WIND",
+        "description": "消耗1点能量，造成1.5倍风元素伤害"
+      },
+      {
+        "name": "终结技·风暴",
+        "type": "ULT",
+        "cost": 3,
+        "multiplier": 3.0,
+        "damage_type": "WIND",
+        "description": "消耗全部能量（≥3），造成3.0倍风元素伤害"
+      }
+    ]
+  },
+  {
+    "character": "丹恒",
+    "skills": [
+      {
+        "name": "基础攻击",
+        "type": "BASIC",
+        "cost": 0,
+        "multiplier": 1.0,
+        "damage_type": "THUNDER",
+        "description": "普通雷元素攻击"
+      },
+      {
+        "name": "战技·雷鸣",
+        "type": "SPECIAL",
+        "cost": 1,
+        "multiplier": 1.5,
+        "damage_type": "THUNDER",
+        "description": "消耗1点能量，造成1.5倍雷元素伤害"
+      },
+      {
+        "name": "终结技·万雷",
+        "type": "ULT",
+        "cost": 3,
+        "multiplier": 3.0,
+        "damage_type": "THUNDER",
+        "description": "消耗全部能量（≥3），造成3.0倍雷元素伤害"
+      }
+    ]
+  },
+  {
+    "character": "姬子",
+    "skills": [
+      {
+        "name": "基础攻击",
+        "type": "BASIC",
+        "cost": 0,
+        "multiplier": 1.0,
+        "damage_type": "FIRE",
+        "description": "普通火元素攻击"
+      },
+      {
+        "name": "战技·烈焰",
+        "type": "SPECIAL",
+        "cost": 1,
+        "multiplier": 1.5,
+        "damage_type": "FIRE",
+        "description": "消耗1点能量，造成1.5倍火元素伤害"
+      },
+      {
+        "name": "终结技·燃星",
+        "type": "ULT",
+        "cost": 3,
+        "multiplier": 3.0,
+        "damage_type": "FIRE",
+        "description": "消耗全部能量（≥3），造成3.0倍火元素伤害"
+      }
+    ]
+  },
+  {
+    "character": "布洛妮娅",
+    "skills": [
+      {
+        "name": "基础攻击",
+        "type": "BASIC",
+        "cost": 0,
+        "multiplier": 1.0,
+        "damage_type": "ICE",
+        "description": "普通冰元素攻击"
+      },
+      {
+        "name": "战技·冰霜",
+        "type": "SPECIAL",
+        "cost": 1,
+        "multiplier": 1.5,
+        "damage_type": "ICE",
+        "description": "消耗1点能量，造成1.5倍冰元素伤害"
+      },
+      {
+        "name": "终结技·永冻",
+        "type": "ULT",
+        "cost": 3,
+        "multiplier": 3.0,
+        "damage_type": "ICE",
+        "description": "消耗全部能量（≥3），造成3.0倍冰元素伤害"
+      }
+    ]
+  },
+  {
+    "character": "银狼",
+    "skills": [
+      {
+        "name": "基础攻击",
+        "type": "BASIC",
+        "cost": 0,
+        "multiplier": 1.0,
+        "damage_type": "QUANTUM",
+        "description": "普通量子元素攻击"
+      },
+      {
+        "name": "战技·量子波",
+        "type": "SPECIAL",
+        "cost": 1,
+        "multiplier": 1.5,
+        "damage_type": "QUANTUM",
+        "description": "消耗1点能量，造成1.5倍量子伤害"
+      },
+      {
+        "name": "终结技·矩阵崩解",
+        "type": "ULT",
+        "cost": 3,
+        "multiplier": 3.0,
+        "damage_type": "QUANTUM",
+        "description": "消耗全部能量（≥3），造成3.0倍量子伤害"
+      }
+    ]
+  },
+  {
+    "character": "瓦尔特",
+    "skills": [
+      {
+        "name": "基础攻击",
+        "type": "BASIC",
+        "cost": 0,
+        "multiplier": 1.0,
+        "damage_type": "IMAGINARY",
+        "description": "普通虚数元素攻击"
+      },
+      {
+        "name": "战技·虚数冲击",
+        "type": "SPECIAL",
+        "cost": 1,
+        "multiplier": 1.5,
+        "damage_type": "IMAGINARY",
+        "description": "消耗1点能量，造成1.5倍虚数伤害"
+      },
+      {
+        "name": "终结技·世界崩解",
+        "type": "ULT",
+        "cost": 3,
+        "multiplier": 3.0,
+        "damage_type": "IMAGINARY",
+        "description": "消耗全部能量（≥3），造成3.0倍虚数伤害"
+      }
+    ]
+  }
+]

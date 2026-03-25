@@ -3,8 +3,21 @@ from .models import Character, Element, Skill, SkillType, Effect, Stat, BattleSt
 from .damage import calculate_damage, apply_damage, DamageResult
 from .battle import BattleEngine, BattleState, BattleEvent
 from .skill import SkillExecutor
+from .character import (
+    create_character,
+    create_character_from_preset,
+    get_preset,
+    list_presets,
+    StatAllocator,
+    TOTAL_POINTS,
+    STAT_LIMITS,
+    STAT_NAMES,
+    STAT_DISPLAY,
+)
+from .character_creator import run_character_creator
 
 __all__ = [
+    # models
     "Character",
     "Element",
     "Skill",
@@ -15,7 +28,19 @@ __all__ = [
     "BattleEngine",
     "BattleEvent",
     "DamageResult",
+    # damage
     "calculate_damage",
     "apply_damage",
-    "SkillExecutor",
+    # character
+    "create_character",
+    "create_character_from_preset",
+    "get_preset",
+    "list_presets",
+    "StatAllocator",
+    "TOTAL_POINTS",
+    "STAT_LIMITS",
+    "STAT_NAMES",
+    "STAT_DISPLAY",
+    # tui
+    "run_character_creator",
 ]
