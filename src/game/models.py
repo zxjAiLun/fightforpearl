@@ -27,13 +27,13 @@ class SkillType(Enum):
 
 class BreakEffectType(Enum):
     """弱点击破效果类型"""
-    NONE = auto()           # 无击破效果（普通）
-    SLASH = auto()          # 裂伤（物理）：持续伤害
-    BURN = auto()           # 灼烧（火）：持续伤害
-    FREEZE = auto()         # 冻结（冰）：无法行动 + 冰属性附加伤害
-    SHOCK = auto()          # 触电（雷）：持续伤害
-    SHEAR = auto()          # 风化（风）：持续伤害，可叠加
-    ENTANGLE = auto()       # 纠缠（量子）：行动延后 + 附加伤害
+    NONE = auto()           # 无击破效果
+    SLASH = auto()          # 裂伤（物理）：按HP%持续伤害
+    BURN = auto()           # 灼烧（火）：火属性DOT
+    FREEZE = auto()         # 冻结（冰）：无法行动 + 冰附加伤害
+    SHOCK = auto()          # 触电（雷）：雷属性DOT
+    SHEAR = auto()          # 风化（风）：可叠加DOT
+    ENTANGLE = auto()        # 纠缠（量子）：行动延后 + 下回合额外伤害
     IMPRISON = auto()       # 禁锢（虚数）：行动延后 + 减速
 
 
@@ -48,70 +48,58 @@ ELEMENT_BREAK_MAP = {
     Element.IMAGINARY: BreakEffectType.IMPRISON,
 }
 
-# 基础属性成长表（每级增加）- 暂时不用（无养成线）
-BASE_GROWTH = {
-    "hp": 100,
-    "atk": 10,
-    "def": 8,
-    "spd": 2,
-}
+# 各击破效果持续回合数
+BREAK_DEFAULT_DURATION = 2
+
+# 风化最大叠加层数
+SHEAR_MAX_STACKS = 3
+
+# 纠缠受击增伤上限
+ENTANGLE_HIT_CAP = 5
 
 
 @dataclass
 class Stat:
-    """
-    角色基础属性（含百分比加成）
-
-    崩铁/原神属性分为两类：
-    - 基础值（base）：如 base_atk = 100
-    - 百分比加成（percent）：如 atk_pct = 0.3（+30% ATK）
-
-    最终攻击力 = (base_atk) × (1 + atk_pct) + flat_bonus
-    最终伤害同理分区域加成
-    """
+    """角色基础属性（含百分比加成）"""
     # --- 基础值 ---
     base_max_hp: int = 100
     base_atk: int = 50
     base_def: int = 30
     base_spd: int = 100
 
-    # --- 百分比加成（来自遗器/光锥/被动等） ---
-    hp_pct: float = 0.0      # 生命值百分比加成（+30% → 0.3）
-    atk_pct: float = 0.0     # 攻击力百分比加成
-    def_pct: float = 0.0     # 防御力百分比加成
-    spd_pct: float = 0.0     # 速度百分比加成
+    # --- 百分比加成 ---
+    hp_pct: float = 0.0
+    atk_pct: float = 0.0
+    def_pct: float = 0.0
+    spd_pct: float = 0.0
 
     # --- 固定值加成 ---
-    hp_flat: int = 0         # 生命值固定加成
-    atk_flat: int = 0        # 攻击力固定加成
-    def_flat: int = 0        # 防御力固定加成
+    hp_flat: int = 0
+    atk_flat: int = 0
+    def_flat: int = 0
 
-    # --- 暴击/效果命中/抵抗 ---
-    crit_rate: float = 0.05   # 暴击率 0-1
-    crit_dmg: float = 0.50   # 暴击伤害倍率 0-3
-    effect_hit: float = 0.00  # 效果命中
-    effect_res: float = 0.00  # 效果抵抗
+    # --- 暴击/抵抗 ---
+    crit_rate: float = 0.05
+    crit_dmg: float = 0.50
+    effect_hit: float = 0.00
+    effect_res: float = 0.00
 
-    # --- 伤害加成区（各类增伤相加） ---
-    dmg_pct: float = 0.0     # 伤害加成百分比（所有属性伤害加成相加）
+    # --- 伤害加成区 ---
+    dmg_pct: float = 0.0
 
-    # --- 削韧能力 ---
-    break_efficiency: float = 1.0  # 击破特攻（影响break伤害）
+    # --- 削韧 ---
+    break_efficiency: float = 1.0
 
     def total_max_hp(self) -> int:
-        """最终生命值 = (基础 + 固定) × (1 + 百分比)"""
         return int((self.base_max_hp + self.hp_flat) * (1 + self.hp_pct))
 
     def total_atk(self) -> int:
-        """最终攻击力 = (基础 + 固定) × (1 + 百分比)"""
         return int((self.base_atk + self.atk_flat) * (1 + self.atk_pct))
 
     def total_def(self) -> int:
-        """最终防御力 = (基础 + 固定) × (1 + 百分比)"""
         return int((self.base_def + self.def_flat) * (1 + self.def_pct))
 
     def total_spd(self) -> int:
-        """最终速度 = 基础 × (1 + 百分比)"""
         return int(self.base_spd * (1 + self.spd_pct))
 
     def clone(self) -> Stat:
@@ -145,13 +133,27 @@ class Character:
     stat: Stat = field(default_factory=Stat)
     current_hp: int = 100
     current_energy: float = 0.0
-    skills: list = field(default_factory=list)      # 主动技能
-    passives: list = field(default_factory=list)    # 被动技能（释放后触发）
-    effects: list = field(default_factory=list)      # 当前 BUFF/DEBUFF
-    passives_triggered_this_turn: list = field(default_factory=list)  # 本回合已触发的被动
+    skills: list = field(default_factory=list)
+    passives: list = field(default_factory=list)
+    effects: list = field(default_factory=list)
+    passives_triggered_this_turn: list = field(default_factory=list)
+
+    # --- 敌人特有 ---
+    is_enemy: bool = False
+    weakness_elements: list = field(default_factory=list)  # 弱点元素（可破韧）
+    toughness: float = 100.0  # 韧性值（削到0触发击破）
+
+    # --- 状态异常 ---
+    frozen_turns: int = 0           # 冻结回合数 >0 则无法行动
+    action_delay: float = 0.0       # 行动延后值（行动时清零）
+    entangle_hit_stacks: int = 0    # 纠缠受击增伤层数（受击时+1，上限5）
 
     def is_alive(self) -> bool:
         return self.current_hp > 0
+
+    def can_act(self) -> bool:
+        """是否可行动（被冻结则不可）"""
+        return self.is_alive() and self.frozen_turns <= 0
 
     def is_energy_full(self) -> bool:
         return self.current_energy >= 3.0
@@ -171,6 +173,9 @@ class Character:
     def end_turn_cleanup(self) -> None:
         """回合结束清理"""
         self.passives_triggered_this_turn.clear()
+        # 冻结回合递减
+        if self.frozen_turns > 0:
+            self.frozen_turns -= 1
 
 
 @dataclass
@@ -178,11 +183,11 @@ class Skill:
     """主动技能"""
     name: str
     type: SkillType
-    cost: float = 0.0          # 能量消耗
-    multiplier: float = 1.0     # ATK 倍率
+    cost: float = 0.0
+    multiplier: float = 1.0
     damage_type: Element = Element.PHYSICAL
     description: str = ""
-    break_type: BreakEffectType = BreakEffectType.NONE  # 击破效果类型
+    break_type: BreakEffectType = BreakEffectType.NONE
 
     def __str__(self) -> str:
         return f"{self.name}[{self.type.name}]"
@@ -192,10 +197,10 @@ class Skill:
 class Passive:
     """被动技能"""
     name: str
-    trigger: SkillType           # 触发条件：释放哪类技能时触发
-    effect_type: str             # "dmg_increase" | "atk_increase"
-    value: float                # 效果值（如 0.3 = +30%）
-    duration: int                # 持续回合数
+    trigger: SkillType
+    effect_type: str
+    value: float
+    duration: int
     description: str = ""
 
     def __str__(self) -> str:
@@ -207,19 +212,16 @@ class Effect:
     """BUFF/DEBUFF 效果"""
     name: str
     turns_remaining: int = 0
-    # 属性加成（叠加到 Stat 上，使用时直接修改角色属性）
-    atk_pct_bonus: float = 0.0    # 攻击力百分比加成
-    dmg_pct_bonus: float = 0.0     # 伤害加成百分比
-    crit_rate_bonus: float = 0.0   # 暴击率加成
-    crit_dmg_bonus: float = 0.0    # 暴击伤害加成
-    spd_pct_bonus: float = 0.0    # 速度百分比加成
-    # 特殊效果
-    heal_on_hit: float = 0.0      # 受到伤害时回复
-    flat_damage: int = 0          # 固定附加伤害
-    vuln_pct: float = 0.0         # 易伤（受到伤害+%，与其他易伤相加）
+    atk_pct_bonus: float = 0.0
+    dmg_pct_bonus: float = 0.0
+    crit_rate_bonus: float = 0.0
+    crit_dmg_bonus: float = 0.0
+    spd_pct_bonus: float = 0.0
+    heal_on_hit: float = 0.0
+    flat_damage: int = 0
+    vuln_pct: float = 0.0
 
     def apply_to(self, char: Character) -> None:
-        """将效果应用到角色属性"""
         char.stat.atk_pct += self.atk_pct_bonus
         char.stat.dmg_pct += self.dmg_pct_bonus
         char.stat.crit_rate += self.crit_rate_bonus
@@ -227,7 +229,6 @@ class Effect:
         char.stat.spd_pct += self.spd_pct_bonus
 
     def remove_from(self, char: Character) -> None:
-        """从角色属性移除效果"""
         char.stat.atk_pct -= self.atk_pct_bonus
         char.stat.dmg_pct -= self.dmg_pct_bonus
         char.stat.crit_rate -= self.crit_rate_bonus
@@ -236,19 +237,68 @@ class Effect:
 
 
 @dataclass
-class BreakDotEffect:
-    """弱点击破持续伤害效果"""
-    name: str
-    element: Element
+class BreakDot:
+    """
+    弱点击破持续伤害效果（挂载在特定角色身上）
+    """
     break_type: BreakEffectType
-    damage_per_tick: int          # 每回合固定伤害
-    turns_remaining: int = 2     # 默认持续2回合
-    stacks: int = 1              # 叠加层数（风化用）
+    element: Element
+    damage_per_tick: int          # 每次触发的伤害
+    turns_remaining: int = BREAK_DEFAULT_DURATION
+    stacks: int = 1              # 风化叠加层数
+    entangle_extra_damage: int = 0  # 纠缠：下回合额外伤害（一次性的）
+    source_name: str = ""         # 来源（用于调试）
 
     def tick(self) -> int:
-        """执行一次伤害，返回伤害值"""
+        """触发一次伤害，返回伤害值"""
         self.turns_remaining -= 1
         return self.damage_per_tick * self.stacks
+
+
+@dataclass
+class BreakStatus:
+    """
+    角色身上的击破状态（包含DOT + 控制效果）
+    统一管理所有击破相关状态
+    """
+    owner: Character
+    break_type: BreakEffectType = BreakEffectType.NONE
+    element: Element = Element.PHYSICAL
+
+    # DOT 持续伤害
+    dot: Optional[BreakDot] = None
+
+    # 控制效果
+    freeze_turns: int = 0          # 冻结回合
+    imprison_spd_penalty: float = 0.0  # 禁锢速度惩罚
+
+    # 行动延后（量子/虚数）
+    action_delay_pct: float = 0.0   # 行动延后百分比
+
+    # 纠缠特殊
+    entangle_hit_stacks: int = 0    # 受击叠加层数
+
+    def has_dot(self) -> bool:
+        return self.dot is not None and self.dot.turns_remaining > 0
+
+    def dot_tick(self) -> int:
+        if not self.has_dot():
+            return 0
+        return self.dot.tick()
+
+    def is_frozen(self) -> bool:
+        return self.freeze_turns > 0
+
+    def has_action_delay(self) -> bool:
+        return self.action_delay_pct > 0
+
+    def clear(self) -> None:
+        self.break_type = BreakEffectType.NONE
+        self.dot = None
+        self.freeze_turns = 0
+        self.action_delay_pct = 0.0
+        self.entangle_hit_stacks = 0
+        self.imprison_spd_penalty = 0.0
 
 
 @dataclass
@@ -258,10 +308,217 @@ class BattleState:
     enemy_team: list[Character]
     turn: int = 1
     current_turn_index: int = 0
-    break_effects: list[BreakDotEffect] = field(default_factory=list)  # 场上击破效果
+
+    # 击破状态（key=角色，value=击破状态）
+    break_statuses: dict[int, BreakStatus] = field(default_factory=dict)
+
+    def _break_status(self, char: Character) -> BreakStatus:
+        """获取或创建角色的击破状态"""
+        cid = id(char)
+        if cid not in self.break_statuses:
+            self.break_statuses[cid] = BreakStatus(owner=char)
+        return self.break_statuses[cid]
+
+    def apply_break(
+        self,
+        target: Character,
+        attacker: Character,
+        break_type: BreakEffectType,
+        element: Element,
+    ) -> "BreakResult":
+        """
+        对目标施加击破效果。
+        返回 BreakResult 描述击破结果。
+        """
+        status = self._break_status(target)
+        status.break_type = break_type
+        status.element = element
+
+        # 计算击破触发伤害
+        from .damage import calculate_break_damage
+        break_dmg = calculate_break_damage(attacker, target, break_type)
+
+        result = BreakResult(
+            triggered=True,
+            break_type=break_type,
+            element=element,
+            break_damage=break_dmg,
+            dot_damage=0,
+            detail="",
+        )
+
+        # 触发削韧
+        target.take_damage(break_dmg)
+
+        # 根据击破类型应用不同效果
+        if break_type == BreakEffectType.SLASH:
+            # 裂伤：按目标HP%持续伤害
+            hp_pct_damage = int(target.stat.total_max_hp() * 0.10)  # 10% HP/回合
+            status.dot = BreakDot(
+                break_type=break_type,
+                element=element,
+                damage_per_tick=hp_pct_damage,
+                turns_remaining=BREAK_DEFAULT_DURATION,
+                source_name="裂伤",
+            )
+            result.dot_damage = hp_pct_damage
+            result.detail = f"裂伤！每回合造成最大HP10%伤害，持续2回合"
+
+        elif break_type == BreakEffectType.BURN:
+            # 灼烧：火属性DOT
+            base_dmg = attacker.level * 10
+            dot_dmg = int(base_dmg * 1.0 * (1 + attacker.stat.break_efficiency))
+            status.dot = BreakDot(
+                break_type=break_type,
+                element=element,
+                damage_per_tick=dot_dmg,
+                turns_remaining=BREAK_DEFAULT_DURATION,
+                source_name="灼烧",
+            )
+            result.dot_damage = dot_dmg
+            result.detail = f"灼烧！每回合造成{dot_dmg}伤害，持续2回合"
+
+        elif break_type == BreakEffectType.FREEZE:
+            # 冻结：无法行动2回合
+            status.freeze_turns = BREAK_DEFAULT_DURATION
+            target.frozen_turns = BREAK_DEFAULT_DURATION
+            result.detail = f"冻结！无法行动，持续2回合"
+
+        elif break_type == BreakEffectType.SHOCK:
+            # 触电：雷属性DOT，伤害系数2
+            base_dmg = attacker.level * 10
+            dot_dmg = int(base_dmg * 2.0 * (1 + attacker.stat.break_efficiency))
+            status.dot = BreakDot(
+                break_type=break_type,
+                element=element,
+                damage_per_tick=dot_dmg,
+                turns_remaining=BREAK_DEFAULT_DURATION,
+                source_name="触电",
+            )
+            result.dot_damage = dot_dmg
+            result.detail = f"触电！每回合造成{dot_dmg}伤害，持续2回合"
+
+        elif break_type == BreakEffectType.SHEAR:
+            # 风化：可叠加DOT
+            base_dmg = attacker.level * 10
+            dot_dmg = int(base_dmg * 1.0 * (1 + attacker.stat.break_efficiency))
+            if status.dot is not None and status.dot.break_type == BreakEffectType.SHEAR:
+                # 叠加（不超过3层）
+                status.dot.stacks = min(SHEAR_MAX_STACKS, status.dot.stacks + 1)
+                status.dot.turns_remaining = BREAK_DEFAULT_DURATION
+            else:
+                status.dot = BreakDot(
+                    break_type=break_type,
+                    element=element,
+                    damage_per_tick=dot_dmg,
+                    turns_remaining=BREAK_DEFAULT_DURATION,
+                    stacks=1,
+                    source_name="风化",
+                )
+            result.dot_damage = dot_dmg * status.dot.stacks
+            result.detail = f"风化！每回合造成{dot_dmg}×{status.dot.stacks}层，持续2回合"
+
+        elif break_type == BreakEffectType.ENTANGLE:
+            # 纠缠：行动延后30% + 下回合额外量子伤害
+            status.action_delay_pct = 0.30
+            target.action_delay = 0.30
+            base_dmg = attacker.level * 10
+            extra_dmg = int(base_dmg * 0.6 * (1 + attacker.stat.break_efficiency))
+            status.dot = BreakDot(
+                break_type=break_type,
+                element=element,
+                damage_per_tick=extra_dmg,
+                turns_remaining=1,  # 下回合触发
+                entangle_extra_damage=extra_dmg,
+                source_name="纠缠",
+            )
+            status.entangle_hit_stacks = 0
+            target.entangle_hit_stacks = 0
+            result.detail = f"纠缠！行动延后30%，下回合造成{extra_dmg}额外伤害"
+
+        elif break_type == BreakEffectType.IMPRISON:
+            # 禁锢：行动延后30% + 减速10%
+            status.action_delay_pct = 0.30
+            target.action_delay = 0.30
+            status.imprison_spd_penalty = 0.10
+            target.stat.spd_pct -= 0.10
+            result.detail = f"禁锢！行动延后30%，速度降低10%，持续2回合"
+
+        return result
+
+    def tick_break_dots(self) -> list[tuple[Character, int, str]]:
+        """
+        处理所有角色的击破DOT伤害。
+        返回 [(角色, 伤害, 效果名)] 列表。
+        """
+        results = []
+        to_remove = []
+
+        for cid, status in list(self.break_statuses.items()):
+            if not status.has_dot():
+                continue
+            if not status.owner.is_alive():
+                to_remove.append(cid)
+                continue
+
+            char = status.owner
+            dot = status.dot
+
+            if status.break_type == BreakEffectType.ENTANGLE and dot.entangle_extra_damage > 0:
+                # 纠缠DOT是额外量子伤害
+                dmg = dot.entangle_extra_damage
+                char.take_damage(dmg)
+                results.append((char, dmg, "纠缠额外伤害"))
+                dot.entangle_extra_damage = 0
+                # 纠缠DOT触发后直接清空（只触发一次）
+                status.dot = None
+                continue
+
+            dmg = dot.tick()
+            if dmg > 0 and char.is_alive():
+                char.take_damage(dmg)
+                results.append((char, dmg, dot.source_name))
+
+            if dot.turns_remaining <= 0:
+                # DOT结束，清理状态
+                status.dot = None
+                if not status.has_dot() and status.freeze_turns <= 0 and status.action_delay_pct <= 0:
+                    to_remove.append(cid)
+
+        for cid in to_remove:
+            if cid in self.break_statuses:
+                del self.break_statuses[cid]
+
+        return results
+
+    def end_turn_break_cleanup(self) -> None:
+        """回合结束时清理击破状态（处理冻结/禁锢递减）"""
+        for cid, status in list(self.break_statuses.items()):
+            # 冻结递减
+            if status.freeze_turns > 0:
+                status.freeze_turns -= 1
+                if status.freeze_turns <= 0:
+                    status.owner.frozen_turns = 0
+                    status.freeze_turns = 0
+
+            # 禁锢速度惩罚恢复
+            if status.imprison_spd_penalty > 0 and status.freeze_turns <= 0 and status.action_delay_pct <= 0:
+                status.owner.stat.spd_pct += status.imprison_spd_penalty
+                status.imprison_spd_penalty = 0.0
+
+            # 行动延后（行动时清零，不在这里处理）
+            if status.action_delay_pct > 0 and status.freeze_turns <= 0:
+                # 行动延后只在角色行动时结算
+                pass
+
+            # 清理已结束的DOT状态
+            if not status.has_dot() and status.freeze_turns <= 0 and status.action_delay_pct <= 0 and status.imprison_spd_penalty <= 0:
+                status.clear()
+                if cid in self.break_statuses:
+                    del self.break_statuses[cid]
 
     def get_current_character(self) -> Optional[Character]:
-        alive = [c for c in self.player_team + self.enemy_team if c.is_alive()]
+        alive = [c for c in self.player_team + self.enemy_team if c.can_act()]
         if self.current_turn_index < len(alive):
             return alive[self.current_turn_index]
         return None
@@ -271,21 +528,19 @@ class BattleState:
         self.turn += 1
 
     def is_battle_over(self) -> tuple[bool, str]:
-        """返回 (是否结束, 胜利方)"""
         if all(not c.is_alive() for c in self.enemy_team):
             return True, "player"
         if all(not c.is_alive() for c in self.player_team):
             return True, "enemy"
         return False, ""
 
-    def tick_break_effects(self) -> list[tuple[Character, int]]:
-        """处理击破持续伤害，返回 [(角色, 伤害)]"""
-        results = []
-        for dot in self.break_effects[:]:
-            for char in self.player_team + self.enemy_team:
-                if char.element == dot.element and char.is_alive():
-                    dmg = dot.tick()
-                    char.take_damage(dmg)
-                    results.append((char, dmg))
-            self.break_effects = [d for d in self.break_effects if d.turns_remaining > 0]
-        return results
+
+@dataclass
+class BreakResult:
+    """击破结果"""
+    triggered: bool = False
+    break_type: BreakEffectType = BreakEffectType.NONE
+    element: Element = Element.PHYSICAL
+    break_damage: int = 0
+    dot_damage: int = 0
+    detail: str = ""

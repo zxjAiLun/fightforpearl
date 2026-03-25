@@ -2,7 +2,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Optional
 
-from .models import Character, Skill, SkillType, Element, Passive, Effect, BreakDotEffect, ELEMENT_BREAK_MAP
+from .models import Character, Skill, SkillType, Element, Passive, Effect, BreakEffectType, ELEMENT_BREAK_MAP
 
 if TYPE_CHECKING:
     from .damage import DamageResult
