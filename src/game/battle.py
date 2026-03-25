@@ -203,30 +203,40 @@ class BattleEngine:
         if skill is None:
             return
 
-        targets = [opponents[0]]
+        # 多目标选择
+        targets = skill.get_targets(opponents)
+        if not targets:
+            return
 
         results = self._skill_executor.execute(skill, actor, targets)
 
-        if results:
+        if not results:
+            return
+
+        action_name = skill.type.name
+
+        # AOE时，汇总伤害信息
+        if len(results) > 1:
+            total_dmg = sum(r.final_damage for _, r in results)
+            target_names = ", ".join(t.name for t, _ in results)
+            detail = f"{actor.name} 使用 {skill.name} 攻击 {target_names}，造成共计 {total_dmg} 伤害"
+            _, first_result = results[0]
+            if first_result.is_crit:
+                detail += " ⚡暴击！"
+            self._log(BattleEvent(
+                turn=self.state.turn,
+                actor=actor,
+                action=action_name,
+                detail=detail,
+                damage_result=first_result,
+            ))
+        else:
             target, result = results[0]
-            action_name = skill.type.name
             detail_parts = [
                 f"{actor.name} 使用 {skill.name} 攻击 {target.name}，造成 {result.final_damage} 伤害"
             ]
             if result.is_crit:
                 detail_parts.append("⚡暴击！")
-
-            # 检查是否触发弱点击破
-            break_msg = self._try_break(target, actor, skill)
-            if break_msg:
-                detail_parts.append(break_msg)
-
-            # 纠缠受击叠加（如果目标有纠缠状态）
-            target_status = self.state._break_status(target)
-            if target_status.break_type == BreakEffectType.ENTANGLE:
-                target_status.entangle_hit_stacks = min(5, target_status.entangle_hit_stacks + 1)
-                target.entangle_hit_stacks = target_status.entangle_hit_stacks
-
             self._log(BattleEvent(
                 turn=self.state.turn,
                 actor=actor,
@@ -234,6 +244,23 @@ class BattleEngine:
                 detail=" ".join(detail_parts),
                 damage_result=result,
             ))
+
+        # 每个目标独立结算击破和效果
+        for target, result in results:
+            break_msg = self._try_break(target, actor, skill)
+            if break_msg:
+                self._log(BattleEvent(
+                    turn=self.state.turn,
+                    actor=actor,
+                    action="BREAK",
+                    detail=f"{target.name}: {break_msg}",
+                ))
+
+            # 纠缠受击叠加
+            target_status = self.state._break_status(target)
+            if target_status.break_type == BreakEffectType.ENTANGLE:
+                target_status.entangle_hit_stacks = min(5, target_status.entangle_hit_stacks + 1)
+                target.entangle_hit_stacks = target_status.entangle_hit_stacks
 
     def _try_break(self, target: Character, attacker: Character, skill: Skill) -> str:
         """

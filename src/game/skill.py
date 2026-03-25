@@ -37,6 +37,12 @@ class SkillExecutor:
             return self._execute_ult(skill, caster, targets)
         return []
 
+    def _effective_multiplier(self, skill: Skill) -> float:
+        """计算有效倍率：AOE时应用 aoe_multiplier 折扣"""
+        if skill.is_aoe():
+            return skill.multiplier * skill.aoe_multiplier
+        return skill.multiplier
+
     def _execute_basic(
         self,
         skill: Skill,
@@ -45,16 +51,16 @@ class SkillExecutor:
     ) -> list[tuple[Character, 'DamageResult']]:
         """普攻：ATK × 1.0 倍率，不消耗能量"""
         from .damage import calculate_damage, apply_damage
+        eff_mult = self._effective_multiplier(skill)
         results = []
         for target in targets:
             result = calculate_damage(
                 caster, target,
-                skill_multiplier=skill.multiplier,
+                skill_multiplier=eff_mult,
                 damage_type=skill.damage_type,
             )
             apply_damage(caster, target, result)
             results.append((target, result))
-        # 触发普攻被动（如果有）
         self._trigger_passives(caster, SkillType.BASIC)
         return results
 
@@ -70,18 +76,18 @@ class SkillExecutor:
         if caster.current_energy < self.SPECIAL_COST:
             return []
 
+        eff_mult = self._effective_multiplier(skill)
         results = []
         for target in targets:
             result = calculate_damage(
                 caster, target,
-                skill_multiplier=skill.multiplier,
+                skill_multiplier=eff_mult,
                 damage_type=skill.damage_type,
             )
             apply_damage(caster, target, result)
             results.append((target, result))
 
         caster.current_energy -= self.SPECIAL_COST
-        # 触发战技被动
         self._trigger_passives(caster, SkillType.SPECIAL)
         return results
 
@@ -97,11 +103,12 @@ class SkillExecutor:
         if caster.current_energy < self.ULT_COST:
             return []
 
+        eff_mult = self._effective_multiplier(skill)
         results = []
         for target in targets:
             result = calculate_damage(
                 caster, target,
-                skill_multiplier=skill.multiplier,
+                skill_multiplier=eff_mult,
                 damage_type=skill.damage_type,
             )
             apply_damage(caster, target, result)

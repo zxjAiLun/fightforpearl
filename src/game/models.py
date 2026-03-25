@@ -188,6 +188,18 @@ class Skill:
     damage_type: Element = Element.PHYSICAL
     description: str = ""
     break_type: BreakEffectType = BreakEffectType.NONE
+    # 多目标支持
+    target_count: int = 1       # 攻击目标数量（1=单体，>1=指定数量，-1=全体）
+    aoe_multiplier: float = 0.8  # AOE倍率折扣（单体技能此字段无意义）
+
+    def is_aoe(self) -> bool:
+        return self.target_count != 1
+
+    def get_targets(self, available: list) -> list:
+        """从可用目标列表中返回本次技能命中的目标"""
+        if self.target_count == -1:
+            return available  # 全体
+        return available[: self.target_count]  # 前N个
 
     def __str__(self) -> str:
         return f"{self.name}[{self.type.name}]"
