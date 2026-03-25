@@ -1,7 +1,7 @@
 # Fight for Pearl — 项目管理文档
 
 ## 当前阶段
-**阶段 5：多目标/AOE技能系统** — 已完成
+**阶段 6：追击机制 + 伤害来源分类** — 已完成
 
 ## 已完成功能
 
@@ -46,6 +46,14 @@
 - [x] Skill.is_aoe() / Skill.get_targets()
 - [x] BattleEngine 多目标击破独立判定
 
+### 阶段 6：追击机制 + 伤害来源分类 ✅
+- [x] DamageSource 枚举（BASIC / SPECIAL / ULT / BREAK_DOT / FOLLOW_UP / COUNTER）
+- [x] DamageResult.damage_source 标记每次伤害来源
+- [x] FollowUpRule：触发条件(技能类型) + 概率 + 倍率 + 伤害类型
+- [x] Character.follow_up_rules 追击规则列表
+- [x] BattleEngine._try_follow_up() 技能释放后检查并执行追击
+- [x] 追击是独立行动（消耗回合但不回复能量）
+
 ## 测试总览
 | 测试文件 | 数量 | 状态 |
 |---------|------|------|
@@ -54,10 +62,11 @@
 | test_skills.py | 24 | ✅ |
 | test_break.py | 15 | ✅ |
 | test_aoe.py | 10 | ✅ |
-| **总计** | **82** | **✅** |
+| test_followup.py | 11 | ✅ |
+| **总计** | **93** | **✅** |
 
 ## 待完成
 - [ ] GUI 界面
-- [ ] BUFF/DEBUFF 效果扩展
-- [ ] 追击/反击机制
 - [ ] 护盾系统
+- [ ] 反击系统（被攻击时概率触发）
+- [ ] 治疗/回复机制
