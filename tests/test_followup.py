@@ -100,6 +100,7 @@ class TestFollowUpTrigger:
         player.follow_up_rules.append(rule)
 
         state = BattleState(player_team=[player], enemy_team=[enemy])
+        state.shared_battle_points = 0  # 强制使用BASIC
         engine = BattleEngine(state)
 
         # 处理一回合
@@ -127,6 +128,7 @@ class TestFollowUpTrigger:
         player.follow_up_rules.append(rule)
 
         state = BattleState(player_team=[player], enemy_team=[enemy])
+        state.shared_battle_points = 0  # 强制使用BASIC
         engine = BattleEngine(state)
 
         alive = [player, enemy]
@@ -172,9 +174,9 @@ class TestFollowUpTrigger:
             multiplier=0.5,
         )
         player.follow_up_rules.append(rule)
-        player.current_energy = 0.0  # 无法放战技，只能普攻
 
         state = BattleState(player_team=[player], enemy_team=[enemy])
+        state.shared_battle_points = 0  # 无法放战技，只能普攻
         engine = BattleEngine(state)
 
         alive = [player, enemy]
