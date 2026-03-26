@@ -372,13 +372,19 @@ class Character:
             self.action_value = current_distance / new_spd
 
     def apply_pull_forward(self, pct: float) -> None:
-        """拉条效果：提前 pct%"""
-        reduction = self.ACTION_COST * pct
+        """拉条效果：提前 pct%
+        每1%提前 = 100 行动值
+        """
+        AV_BASE = 10000.0
+        reduction = AV_BASE * pct
         self.action_value = max(0, self.action_value - reduction)
 
     def apply_delay(self, pct: float) -> None:
-        """推条效果：延后 pct%"""
-        delay = self.ACTION_COST * pct
+        """推条效果：延后 pct%
+        每1%延后 = 100 行动值
+        """
+        AV_BASE = 10000.0
+        delay = AV_BASE * pct
         self.action_value += delay
 
     def reset_action_value_after_freeze(self) -> None:
