@@ -327,5 +327,47 @@
         "support_modifier_name": "轮契-爆伤"
       }
     ]
+  },
+  {
+    "character": "遐蝶",
+    "skills": [
+      {
+        "name": "霜棘",
+        "type": "BASIC",
+        "cost": 0,
+        "multiplier": 1.0,
+        "damage_type": "ICE",
+        "description": "单体冰伤攻击",
+        "energy_gain": 20.0,
+        "battle_points_gain": 1,
+        "break_power": 10
+      },
+      {
+        "name": "织梦",
+        "type": "SPECIAL",
+        "cost": 1,
+        "multiplier": 0.0,
+        "damage_type": "ICE",
+        "description": "召唤忆灵傀儡，忆灵会在普攻后协同攻击",
+        "energy_gain": 25.0,
+        "battle_points_gain": 0,
+        "break_power": 0,
+        "is_support_skill": true,
+        "support_modifier_name": "召唤忆灵"
+      },
+      {
+        "name": "凝寒",
+        "type": "ULT",
+        "cost": 3,
+        "multiplier": 1.5,
+        "damage_type": "ICE",
+        "description": "对所有敌人造成1.5倍冰伤，忆灵追击所有敌人",
+        "energy_gain": 5.0,
+        "battle_points_gain": 0,
+        "break_power": 30,
+        "target_count": -1,
+        "aoe_multiplier": 0.8
+      }
+    ]
   }
 ]
