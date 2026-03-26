@@ -238,6 +238,9 @@ class DamageSource(Enum):
     BREAK_DOT = auto()  # 击破持续伤害
     FOLLOW_UP = auto()  # 追击
     COUNTER = auto()    # 反击
+    附加 = auto()       # 附加伤害（追加伤害）
+    DOT = auto()       # 持续伤害
+    TRUE = auto()       # 真实伤害（无视防御）
 
 
 @dataclass

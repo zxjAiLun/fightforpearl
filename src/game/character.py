@@ -96,6 +96,11 @@ def create_character_from_preset(name: str) -> Character:
     )
     assign_default_passives(char)
     
+    # 特殊角色有特定的被动技能
+    if name == "遐蝶":
+        from .character_skills.castorice import create_castorice_passives
+        char.passives.extend(create_castorice_passives())
+    
     # 从skills.json加载技能数据并分配
     try:
         import json
