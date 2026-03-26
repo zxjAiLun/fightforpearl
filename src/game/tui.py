@@ -134,14 +134,79 @@ def main():
     parser = argparse.ArgumentParser(description="Fight for Pearl 战斗演示")
     parser.add_argument("--full", action="store_true", help="显示完整战斗日志")
     parser.add_argument("--export", type=str, default=None, help="导出战斗日志到指定文件")
+    parser.add_argument("--team", type=str, default=None, help="指定队伍角色（逗号分隔，如'星,银狼,姬子,布洛妮娅'）")
+    parser.add_argument("--enemy", type=int, default=2, help="敌人数量（默认2）")
     args = parser.parse_args()
     
+    # 自定义队伍
+    if args.team:
+        team_names = args.team.split(",")
+        player_team = [create_character_from_preset(name.strip()) for name in team_names]
+    else:
+        player_team = create_player_team()
+    
+    # 创建敌人
+    enemies = []
+    enemy_names = ["可可利亚", "史瓦罗", "杰维斯", "可可利亚Ⅲ"]
+    for i in range(min(args.enemy, len(enemy_names))):
+        enemy = create_enemy(
+            name=enemy_names[i],
+            weakness_elements=[Element.THUNDER, Element.FIRE],
+            hp_units=10,
+        )
+        enemies.append(enemy)
+    
     log_level = BattleEngine.FULL_DETAIL if args.full else BattleEngine.DAMAGE_ONLY
-    engine = battle_demo(log_level)
+    engine = battle_demo_with_custom_team(player_team, enemies, log_level)
     
     if args.export:
         engine.export_to_json(args.export)
         print(f"\n战斗日志已导出到: {args.export}")
+
+
+def battle_demo_with_custom_team(player_team, enemies, log_level=BattleEngine.DAMAGE_ONLY):
+    """使用自定义队伍的演示战斗"""
+    
+    print("=" * 70)
+    print("⚔️  Fight for Pearl — 战斗演示")
+    print(f"日志级别: {'全部事件' if log_level == BattleEngine.FULL_DETAIL else '仅伤害'}")
+    print("=" * 70)
+
+    state = BattleState(
+        player_team=player_team,
+        enemy_team=enemies,
+        turn=1,
+        shared_battle_points=3,
+        shared_battle_points_limit=5,
+    )
+
+    engine = BattleEngine(state, log_level=log_level)
+    
+    if log_level == BattleEngine.FULL_DETAIL:
+        engine.set_logger(print_battle_event_full)
+    else:
+        engine.set_logger(print_battle_event_damage_only)
+
+    print("\n【战斗开始】")
+    for i, player in enumerate(player_team):
+        # 显示角色技能信息
+        skills_info = ", ".join([f"{s.name}({s.multiplier}x)" for s in player.skills[:3]])
+        print(f"我方{i+1}：{player.name} (HP:{player.current_hp} SPD:{player.stat.total_spd()}) 技能:{skills_info}")
+    for i, enemy in enumerate(enemies):
+        print(f"敌方{i+1}：{enemy.name} (HP:{enemy.current_hp} SPD:{enemy.stat.total_spd()})")
+    print()
+
+    result = engine.start()
+
+    print("\n【战斗结果】")
+    for char in state.player_team + state.enemy_team:
+        if char in state.player_team:
+            print_character_status(char, state.shared_battle_points, state.shared_battle_points_limit)
+        else:
+            print_character_status(char)
+    print(f"\n{result}")
+
+    return engine
 
 
 if __name__ == "__main__":
