@@ -173,6 +173,8 @@ class ModifierManager:
         - REFRESH: 如果已存在同名modifier，刷新持续时间
         - ACCUMULATE: 叠加效果（如风化层数）
         - IGNORE: 如果已存在，忽略新的
+        
+        对于有拉条/退条效果的modifier，立即应用AV变化
         """
         # 检查是否已存在同名modifier
         existing = self._find_modifier(modifier.name)
@@ -185,6 +187,13 @@ class ModifierManager:
             # IGNORE: 不做任何处理
         else:
             modifier.on_apply(self.owner)
+            
+            # 立即应用AV变化（拉条/退条效果）
+            if modifier.pull_forward_pct > 0:
+                self.owner.apply_pull_forward(modifier.pull_forward_pct)
+            if modifier.delay_pct > 0:
+                self.owner.apply_delay(modifier.delay_pct)
+            
             self.modifiers.append(modifier)
     
     def remove_modifier(self, name: str) -> bool:
@@ -264,11 +273,15 @@ class ModifierManager:
         return stats
     
     def get_action_value_change(self) -> float:
-        """获取行动值变化（拉条/退条）"""
+        """获取行动值变化（拉条/退条）
+        
+        pull_forward_pct=1.0 表示拉条100%，即AV减少10000
+        delay_pct=0.2 表示退条20%，即AV增加2000
+        """
         total = 0.0
         for mod in self.modifiers:
-            total += mod.pull_forward_pct * 100  # 拉条百分比转AV
-            total -= mod.delay_pct * 100       # 退条百分比转AV
+            total += mod.pull_forward_pct * 10000  # 拉条百分比转AV
+            total -= mod.delay_pct * 10000       # 退条百分比转AV
         return total
     
     def get_status_effects(self) -> dict:

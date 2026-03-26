@@ -121,7 +121,12 @@ def calculate_damage(
     else:
         crit_roll = random.random()
         is_crit = crit_roll < attacker.stat.crit_rate
-        crit_mult = attacker.stat.crit_dmg if is_crit else 1.0
+        # 计算暴击伤害倍率 = 基础暴击伤害 + modifier加成
+        crit_dmg_base = attacker.stat.crit_dmg
+        if attacker.modifier_manager:
+            modifier_stats = attacker.modifier_manager.get_total_stats()
+            crit_dmg_base += modifier_stats.get('crit_dmg_pct', 0.0)
+        crit_mult = crit_dmg_base if is_crit else 1.0
 
     # === 6. 易伤区 ===
     total_vuln = 1.0

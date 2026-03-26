@@ -304,7 +304,7 @@ class SkillExecutor:
                     name="指令-拉条",
                     source_skill="指令",
                     duration=1,
-                    modifier_type=1,  # BUFF
+                    modifier_type=ModifierType.BUFF,
                     pull_forward_pct=1.0,  # 100%拉条
                 )
             elif skill.name == "轮契":
@@ -313,7 +313,7 @@ class SkillExecutor:
                     name="轮契-爆伤",
                     source_skill="轮契",
                     duration=2,
-                    modifier_type=1,  # BUFF
+                    modifier_type=ModifierType.BUFF,
                     crit_dmg_pct=0.6,  # +60%爆伤
                 )
             
