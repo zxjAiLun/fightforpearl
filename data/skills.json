@@ -332,23 +332,23 @@
     "character": "遐蝶",
     "skills": [
       {
-        "name": "叹息·内海涟漪",
+        "name": "哀悼，死海之涟漪",
         "type": "BASIC",
         "cost": 0,
         "multiplier": 0.25,
         "damage_type": "QUANTUM",
-        "description": "对单目标造成25% Max HP的量子伤害",
+        "description": "对指定敌方单体造成等同于遐蝶25%生命上限的量子属性伤害",
         "energy_gain": 20.0,
         "battle_points_gain": 1,
         "break_power": 30
       },
       {
-        "name": "缄默·游掠者之触",
+        "name": "缄默，幽蝶之轻抚",
         "type": "SPECIAL",
         "cost": 1,
         "multiplier": 0.25,
         "damage_type": "QUANTUM",
-        "description": "消耗30%全队HP，对目标造成25% Max HP，相邻目标15% Max HP",
+        "description": "消耗30%全队HP，对目标造成25% Max HP，相邻目标15% Max HP。若死龙在场，替换为骸爪，冥龙之环拥",
         "energy_gain": 25.0,
         "battle_points_gain": 0,
         "break_power": 60,
@@ -356,17 +356,30 @@
         "spread_multiplier": 0.6
       },
       {
-        "name": "哀鸣·破晓钟声",
+        "name": "骸爪，冥龙之环拥",
+        "type": "SPECIAL",
+        "cost": 1,
+        "multiplier": 0.25,
+        "damage_type": "QUANTUM",
+        "description": "消耗40%全队HP(除死龙)，遐蝶与死龙连携攻击，对敌方全体造成15%和25% Max HP伤害",
+        "energy_gain": 25.0,
+        "battle_points_gain": 0,
+        "break_power": 60,
+        "target_count": -1,
+        "aoe_multiplier": 0.6
+      },
+      {
+        "name": "亡喉怒哮，苏生之颂铃",
         "type": "ULT",
         "cost": 3,
         "multiplier": 0.0,
         "damage_type": "QUANTUM",
-        "description": "召唤忆灵Netherwing，行动提前100%，部署领域降敌人抗性",
+        "description": "召唤死龙使其行动提前100%，展开遗世冥域降敌方抗性10%",
         "energy_gain": 0.0,
         "battle_points_gain": 0,
         "break_power": 0,
         "is_support_skill": true,
-        "support_modifier_name": "召唤忆灵",
+        "support_modifier_name": "召唤死龙",
         "target_count": -1
       }
     ]
