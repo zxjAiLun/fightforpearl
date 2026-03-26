@@ -8,7 +8,95 @@ sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='repla
 
 from .battle import BattleEngine, BattleState, BattleEvent, create_default_character, create_enemy
 from .character import create_character_from_preset
-from .models import Element
+from .models import Element, SkillType
+
+
+def prompt_skill_selection(actor, available_skills, opponents) -> tuple:
+    """
+    TUI模式下提示玩家选择技能和目标
+    
+    Args:
+        actor: 当前行动的角色
+        available_skills: 可用的技能列表
+        opponents: 可选择的敌人目标
+    
+    Returns:
+        (skill, targets): 选中的技能和目标列表
+    """
+    from .skill import select_player_skill
+    
+    # 获取可用的技能
+    available = []
+    for skill in available_skills:
+        if skill.type == SkillType.ULT and not actor.is_energy_full():
+            continue  # 大招能量不足
+        if skill.type == SkillType.SPECIAL:
+            # 战技需要战绩点，但在TUI中我们不检查这个
+            available.append(skill)
+        else:
+            available.append(skill)
+    
+    # 显示技能选择菜单
+    print(f"\n{'='*50}")
+    print(f"【{actor.name}】选择技能：")
+    print(f"能量: {int(actor.energy)}/{actor.energy_limit}")
+    print(f"战绩点: (团队共享)")
+    print(f"{'='*50}")
+    
+    for i, skill in enumerate(available, 1):
+        skill_type = skill.type.name
+        if skill.type == SkillType.ULT:
+            skill_type = "大招"
+        elif skill.type == SkillType.SPECIAL:
+            skill_type = "战技"
+        elif skill.type == SkillType.BASIC:
+            skill_type = "普攻"
+        
+        print(f"  {i}. {skill.name} [{skill_type}] - 倍率:{skill.multiplier}")
+    
+    # 显示目标选择
+    print(f"\n可用目标：")
+    for i, opp in enumerate(opponents, 1):
+        print(f"  {i}. {opp.name} (HP:{int(opp.current_hp)}/{opp.stat.total_max_hp()})")
+    
+    # 读取玩家输入
+    while True:
+        try:
+            skill_choice = input("\n选择技能(数字): ").strip()
+            skill_idx = int(skill_choice) - 1
+            if 0 <= skill_idx < len(available):
+                selected_skill = available[skill_idx]
+                break
+            else:
+                print("无效的选择，请重新输入")
+        except ValueError:
+            print("请输入数字")
+    
+    # 选择目标
+    if selected_skill.is_aoe() or selected_skill.target_count == -1:
+        # AOE技能选择所有目标
+        targets = opponents
+    else:
+        while True:
+            try:
+                target_choice = input("\n选择目标(数字，逗号分隔多个): ").strip()
+                if not target_choice:
+                    # 默认选择第一个目标
+                    targets = [opponents[0]]
+                    break
+                
+                indices = [int(x.strip()) - 1 for x in target_choice.split(",")]
+                targets = [opponents[i] for i in indices if 0 <= i < len(opponents)]
+                if targets:
+                    break
+                else:
+                    print("无效的选择，请重新输入")
+            except ValueError:
+                print("请输入有效的数字")
+    
+    print(f"选择了 {selected_skill.name}，目标: {[t.name for t in targets]}")
+    
+    return selected_skill, targets
 
 
 def print_battle_event_damage_only(event: BattleEvent):

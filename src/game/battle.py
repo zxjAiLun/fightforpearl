@@ -76,6 +76,10 @@ class BattleEngine:
         # 事件总线（发布-订阅模式）
         self._event_bus = EventBus()
         
+        # 玩家控制模式
+        self._player_control_enabled = False
+        self._player_input_callback = None  # 玩家输入回调
+        
         # 关联角色和战斗状态的引用（用于事件总线获取对手列表）
         for char in state.player_team + state.enemy_team:
             char._battle_state = state
@@ -86,6 +90,26 @@ class BattleEngine:
         self._assign_skills_and_passives_to_teams()
         self._create_round_marker()
         self._register_follow_up_triggers()
+    
+    def enable_player_control(self, callback=None):
+        """
+        启用玩家手动控制技能选择
+        
+        Args:
+            callback: 可选的玩家输入回调函数，签名：
+                      callback(actor, available_skills, opponents) -> SkillChoice
+        """
+        self._player_control_enabled = True
+        self._player_input_callback = callback
+    
+    def disable_player_control(self):
+        """禁用玩家手动控制，恢复AI自动选择"""
+        self._player_control_enabled = False
+        self._player_input_callback = None
+    
+    def is_player_controlled(self) -> bool:
+        """检查是否启用了玩家控制"""
+        return self._player_control_enabled
 
     def _load_skills_data(self) -> list:
         try:
@@ -743,8 +767,14 @@ class BattleEngine:
             sorted_targets = select_enemy_targets(actor, opponents)
             targets = sorted_targets if (skill and skill.is_aoe()) else sorted_targets[:1]
         else:
-            skill = self._skill_executor.select_best_skill(actor, self.state)
-            targets = skill.get_targets(opponents) if skill else []
+            # 玩家角色技能选择
+            if self._player_control_enabled and self._player_input_callback:
+                # 玩家手动选择
+                skill, targets = self._player_input_callback(actor, actor.skills, opponents)
+            else:
+                # AI自动选择
+                skill = self._skill_executor.select_best_skill(actor, self.state)
+                targets = skill.get_targets(opponents) if skill else []
         
         if skill is None or not targets:
             return
