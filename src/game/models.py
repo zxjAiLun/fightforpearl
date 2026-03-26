@@ -71,6 +71,135 @@ class SkillType(Enum):
     ABILITY_PASSIVE = auto() # 能力（被动）
 
 
+class TriggerCondition(Enum):
+    """追加攻击触发条件类型"""
+    NONE = auto()                    # 无条件
+    TARGET_HP_BELOW = auto()         # 目标HP低于某阈值
+    TARGET_HP_ABOVE = auto()         # 目标HP高于某阈值
+    TARGET_IS_WEAKENED = auto()      # 目标处于弱化状态
+    CASTER_HP_BELOW = auto()         # 自身HP低于某阈值
+    CASTER_HP_ABOVE = auto()         # 自身HP高于某阈值
+    AFTER_BASIC = auto()              # 普攻后必然触发
+    AFTER_SPECIAL = auto()            # 战技后必然触发
+    KILL = auto()                     # 击杀后触发
+    RANDOM = auto()                   # 随机概率触发
+
+
+class FollowUpTrigger:
+    """
+    追加攻击触发器
+    
+    与FollowUpRule不同，FollowUpTrigger是独立的追加攻击系统，
+    有自己的触发条件和执行逻辑。
+    """
+    
+    def __init__(
+        self,
+        name: str,
+        condition: TriggerCondition = TriggerCondition.NONE,
+        condition_value: float = 0.0,  # 条件阈值（如HP百分比）
+        trigger_skill_type: SkillType = SkillType.BASIC,  # 触发技能类型
+        chance: float = 1.0,  # 触发概率
+        follow_up_skill_name: str = "",
+        multiplier: float = 0.6,  # 伤害倍率（相对于普攻）
+        damage_type: Element = Element.PHYSICAL,
+        target_scope: str = "single",  # "single" | "aoe" | "trigger"
+        description: str = "",
+    ):
+        self.name = name
+        self.condition = condition
+        self.condition_value = condition_value  # HP阈值（百分比，如0.5表示50%）
+        self.trigger_skill_type = trigger_skill_type
+        self.chance = chance
+        self.follow_up_skill_name = follow_up_skill_name
+        self.multiplier = multiplier
+        self.damage_type = damage_type
+        self.target_scope = target_scope  # single=攻击触发目标, aoe=攻击所有敌人, trigger=只攻击触发目标
+        self.description = description
+    
+    def check_condition(
+        self,
+        caster: 'Character',
+        trigger_target: 'Character',
+        all_opponents: list['Character'] = None,
+    ) -> tuple[bool, list['Character']]:
+        """
+        检查触发条件是否满足
+        
+        Returns:
+            (是否触发, 追加攻击目标列表)
+        """
+        import random
+        
+        # 检查概率
+        if not random.random() < self.chance:
+            return False, []
+        
+        # 检查触发条件
+        targets = []
+        
+        if self.condition == TriggerCondition.NONE:
+            targets = [trigger_target]
+            
+        elif self.condition == TriggerCondition.TARGET_HP_BELOW:
+            # 目标HP低于阈值
+            threshold = trigger_target.stat.total_max_hp() * self.condition_value
+            if trigger_target.current_hp <= threshold:
+                targets = [trigger_target]
+                
+        elif self.condition == TriggerCondition.TARGET_HP_ABOVE:
+            threshold = trigger_target.stat.total_max_hp() * self.condition_value
+            if trigger_target.current_hp >= threshold:
+                targets = [trigger_target]
+                
+        elif self.condition == TriggerCondition.TARGET_IS_WEAKENED:
+            # 目标处于弱化状态（有负面效果）
+            if any(e.is_debuff() for e in trigger_target.effects):
+                targets = [trigger_target]
+                
+        elif self.condition == TriggerCondition.CASTER_HP_BELOW:
+            threshold = caster.stat.total_max_hp() * self.condition_value
+            if caster.current_hp <= threshold:
+                targets = [trigger_target]
+                
+        elif self.condition == TriggerCondition.CASTER_HP_ABOVE:
+            threshold = caster.stat.total_max_hp() * self.condition_value
+            if caster.current_hp >= threshold:
+                targets = [trigger_target]
+                
+        elif self.condition == TriggerCondition.AFTER_BASIC:
+            if self.trigger_skill_type == SkillType.BASIC:
+                targets = [trigger_target]
+                
+        elif self.condition == TriggerCondition.AFTER_SPECIAL:
+            if self.trigger_skill_type == SkillType.SPECIAL:
+                targets = [trigger_target]
+                
+        elif self.condition == TriggerCondition.KILL:
+            # 击杀后触发，攻击所有敌人
+            if all_opponents:
+                targets = all_opponents
+                
+        elif self.condition == TriggerCondition.RANDOM:
+            targets = [trigger_target]
+        
+        # 根据target_scope决定最终目标
+        if not targets:
+            return False, []
+        
+        if self.target_scope == "aoe" and all_opponents:
+            return True, all_opponents
+        elif self.target_scope == "trigger":
+            return True, [trigger_target]
+        else:
+            return True, targets[:1]  # 默认只打触发目标
+        
+        return False, []
+    
+    def __repr__(self) -> str:
+        return f"FollowUpTrigger({self.name}, {self.condition.name}, chance={self.chance})"
+
+
 class DamageSource(Enum):
     """
     伤害来源类型
@@ -298,6 +427,7 @@ class Character:
     entangle_hit_stacks: int = 0
 
     follow_up_rules: list = field(default_factory=list)
+    follow_up_triggers: list = field(default_factory=list)  # 追加攻击触发器列表
 
     kill_energy_gain: int = 10
     hit_energy_gain: int = 10

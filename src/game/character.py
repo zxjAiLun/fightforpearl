@@ -4,7 +4,7 @@ from typing import Optional
 import json
 import os
 
-from .models import Character, Element, Stat, Skill, SkillType, Passive
+from .models import Character, Element, Stat, Skill, SkillType, Passive, FollowUpTrigger, TriggerCondition
 from .skill import assign_default_passives
 
 
@@ -111,6 +111,24 @@ def create_character_from_preset(name: str) -> Character:
         assign_default_skills(char, skills_data)
     except Exception as e:
         print(f"Warning: Failed to load skills for {name}: {e}")
+    
+    # 加载追加攻击触发器
+    char_data = get_character_data(name)
+    if char_data and "follow_up_triggers" in char_data:
+        for trigger_data in char_data["follow_up_triggers"]:
+            trigger = FollowUpTrigger(
+                name=trigger_data["name"],
+                condition=TriggerCondition[trigger_data.get("condition", "NONE")],
+                condition_value=float(trigger_data.get("condition_value", 0.0)),
+                trigger_skill_type=SkillType[trigger_data.get("trigger_skill_type", "BASIC")],
+                chance=float(trigger_data.get("chance", 1.0)),
+                follow_up_skill_name=trigger_data.get("follow_up_skill_name", ""),
+                multiplier=float(trigger_data.get("multiplier", 0.6)),
+                damage_type=Element[trigger_data.get("damage_type", "PHYSICAL")],
+                target_scope=trigger_data.get("target_scope", "single"),
+                description=trigger_data.get("description", ""),
+            )
+            char.follow_up_triggers.append(trigger)
     
     return char
 

@@ -460,6 +460,64 @@ class BattleEngine:
                         damage_result=result,
                     ))
 
+    def _try_follow_up_trigger(
+        self,
+        caster: Character,
+        skill: Skill,
+        primary_targets: list[Character],
+        turn: int,
+    ) -> None:
+        """
+        检查并触发追加攻击触发器
+        追加攻击触发器是独立于FollowUpRule的系统，有自己的触发条件
+        """
+        if not caster.follow_up_triggers:
+            return
+        
+        # 获取所有敌人
+        if caster.is_enemy:
+            opponents = [c for c in self.state.player_team if c.is_alive()]
+        else:
+            opponents = [c for c in self.state.enemy_team if c.is_alive()]
+        
+        for trigger in caster.follow_up_triggers:
+            # 检查触发条件
+            triggered, fu_targets = trigger.check_condition(
+                caster,
+                primary_targets[0] if primary_targets else None,
+                opponents,
+            )
+            
+            if not triggered:
+                continue
+            
+            # 创建追加攻击技能
+            fu_skill = Skill(
+                name=f"追加攻击·{trigger.name}",
+                type=SkillType.FOLLOW_UP,
+                multiplier=trigger.multiplier,
+                damage_type=trigger.damage_type,
+            )
+            
+            # 执行追加攻击
+            for target in fu_targets:
+                result = calculate_damage(
+                    caster, target,
+                    skill_multiplier=fu_skill.multiplier,
+                    damage_type=fu_skill.damage_type,
+                    damage_source=DamageSource.FOLLOW_UP,
+                    attacker_is_player=not caster.is_enemy,
+                )
+                apply_damage(caster, target, result)
+                
+                self._log(BattleEvent(
+                    turn=turn,
+                    actor=caster,
+                    action="FOLLOW_UP_TRIGGER",
+                    detail=f"{caster.name} 触发追加攻击！对 {target.name} 造成 {result.final_damage} 伤害",
+                    damage_result=result,
+                ))
+
     def step_back(self) -> bool:
         """
         回退到上一个行动状态
@@ -658,6 +716,9 @@ class BattleEngine:
                 target.entangle_hit_stacks = target_status.entangle_hit_stacks
         
         self._try_follow_up(actor, skill, results, turn_counter)
+        
+        # 检查追加攻击触发器
+        self._try_follow_up_trigger(actor, skill, targets, turn_counter)
 
 
 def create_default_character(name: str, element=None) -> Character:
