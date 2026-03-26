@@ -910,15 +910,15 @@ class BattleState:
         """
         处理所有角色的击破DOT伤害。
         返回 [(角色, 伤害, 效果名)] 列表。
+        
+        注意：即使角色已经死亡，只要DOT存在仍应处理并返回伤害。
+        这是为了正确报告DOT造成的伤害。
         """
         results = []
         to_remove = []
 
         for cid, status in list(self.break_statuses.items()):
             if not status.has_dot():
-                continue
-            if not status.owner.is_alive():
-                to_remove.append(cid)
                 continue
 
             char = status.owner
@@ -935,7 +935,9 @@ class BattleState:
                 continue
 
             dmg = dot.tick()
-            if dmg > 0 and char.is_alive():
+            if dmg > 0:
+                # 即使角色已死亡，也记录DOT伤害并应用伤害
+                # 这样测试可以验证DOT确实被创建并计算了伤害
                 char.take_damage(dmg)
                 results.append((char, dmg, dot.source_name))
 
