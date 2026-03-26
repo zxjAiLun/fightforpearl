@@ -103,8 +103,11 @@ class SkillExecutor:
         results = []
         attacker_is_player = not caster.is_enemy
 
+        # 处理辅助技能（不造成伤害，应用Modifier）
+        if skill.is_support_skill:
+            results = self._execute_support_skill(skill, caster, targets, battle_state, DamageSource.SPECIAL)
         # 处理弹射技能
-        if skill.is_ricochet():
+        elif skill.is_ricochet():
             results = self._execute_ricochet(skill, caster, targets, battle_state, DamageSource.SPECIAL)
         # 处理扩散技能
         elif skill.is_spread():
@@ -143,8 +146,11 @@ class SkillExecutor:
         results = []
         attacker_is_player = not caster.is_enemy
 
+        # 处理辅助技能（不造成伤害，应用Modifier）
+        if skill.is_support_skill:
+            results = self._execute_support_skill(skill, caster, targets, battle_state, DamageSource.ULT)
         # 处理弹射技能
-        if skill.is_ricochet():
+        elif skill.is_ricochet():
             results = self._execute_ricochet(skill, caster, targets, battle_state, DamageSource.ULT)
         # 处理扩散技能
         elif skill.is_spread():
@@ -262,6 +268,73 @@ class SkillExecutor:
             apply_damage(caster, target, result)
             results.append((target, result))
 
+        return results
+
+    def _execute_support_skill(
+        self,
+        skill: Skill,
+        caster: Character,
+        targets: list[Character],
+        battle_state: 'BattleState' = None,
+        damage_source: 'DamageSource' = DamageSource.SPECIAL,
+    ) -> list[tuple[Character, 'DamageResult']]:
+        """
+        辅助技能执行：不造成伤害，应用Modifier效果
+        
+        辅助技能如布洛妮娅的"指令"（拉条）和"轮契"（加爆伤）
+        """
+        from .modifier import Modifier
+        from .damage import DamageResult
+        
+        results = []
+        
+        if not targets:
+            return results
+        
+        # 根据技能名称应用对应的Modifier
+        modifier_name = skill.support_modifier_name
+        
+        for target in targets:
+            mod = None
+            
+            # 布洛妮娅的技能
+            if skill.name == "指令":
+                # 拉条100% Modifier
+                mod = Modifier(
+                    name="指令-拉条",
+                    source_skill="指令",
+                    duration=1,
+                    modifier_type=1,  # BUFF
+                    pull_forward_pct=1.0,  # 100%拉条
+                )
+            elif skill.name == "轮契":
+                # 爆伤加成 Modifier
+                mod = Modifier(
+                    name="轮契-爆伤",
+                    source_skill="轮契",
+                    duration=2,
+                    modifier_type=1,  # BUFF
+                    crit_dmg_pct=0.6,  # +60%爆伤
+                )
+            
+            if mod:
+                target.add_modifier(mod)
+                # 创建空的DamageResult表示技能成功施放
+                result = DamageResult(
+                    final_damage=0,
+                    is_crit=False,
+                    base_damage=0.0,
+                    crit_multiplier=1.0,
+                    def_reduction=0.0,
+                    dmg_pct_total=0.0,
+                    vuln_multiplier=0.0,
+                    damage_source=damage_source,
+                    break_triggered=False,
+                    break_result=None,
+                    resisted=False,
+                )
+                results.append((target, result))
+        
         return results
 
     def _trigger_passives(self, caster: Character, trigger_type: SkillType) -> None:
@@ -470,6 +543,8 @@ def build_skills_from_json(data: list[dict]) -> dict[str, list[Skill]]:
                 ricochet_decay=float(s.get("ricochet_decay", 0.8)),
                 spread_count=int(s.get("spread_count", 0)),
                 spread_multiplier=float(s.get("spread_multiplier", 0.5)),
+                is_support_skill=bool(s.get("is_support_skill", False)),
+                support_modifier_name=s.get("support_modifier_name", ""),
             ))
         result[char_name] = skills
     return result
@@ -501,6 +576,8 @@ def assign_default_skills(char: Character, skills_data: list[dict]) -> None:
                     ricochet_decay=float(s.get("ricochet_decay", 0.8)),
                     spread_count=int(s.get("spread_count", 0)),
                     spread_multiplier=float(s.get("spread_multiplier", 0.5)),
+                    is_support_skill=bool(s.get("is_support_skill", False)),
+                    support_modifier_name=s.get("support_modifier_name", ""),
                 ))
             return
     # Fallback: 添加默认普攻

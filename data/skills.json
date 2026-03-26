@@ -162,44 +162,6 @@
     ]
   },
   {
-    "character": "布洛妮娅",
-    "skills": [
-      {
-        "name": "基础攻击",
-        "type": "BASIC",
-        "cost": 0,
-        "multiplier": 1.0,
-        "damage_type": "ICE",
-        "description": "普通冰元素攻击",
-        "energy_gain": 20.0,
-        "battle_points_gain": 1,
-        "break_power": 10
-      },
-      {
-        "name": "战技·冰霜",
-        "type": "SPECIAL",
-        "cost": 1,
-        "multiplier": 1.5,
-        "damage_type": "ICE",
-        "description": "消耗1点战绩点，造成1.5倍冰元素伤害",
-        "energy_gain": 30.0,
-        "battle_points_gain": 0,
-        "break_power": 20
-      },
-      {
-        "name": "终结技·永冻",
-        "type": "ULT",
-        "cost": 3,
-        "multiplier": 3.0,
-        "damage_type": "ICE",
-        "description": "消耗全部能量，造成3.0倍冰元素伤害",
-        "energy_gain": 5.0,
-        "battle_points_gain": 0,
-        "break_power": 40
-      }
-    ]
-  },
-  {
     "character": "银狼",
     "skills": [
       {
@@ -320,6 +282,49 @@
         "break_power": 40,
         "target_count": -1,
         "aoe_multiplier": 0.9
+      }
+    ]
+  },
+  {
+    "character": "布洛妮娅",
+    "skills": [
+      {
+        "name": "射击",
+        "type": "BASIC",
+        "cost": 0,
+        "multiplier": 1.0,
+        "damage_type": "THUNDER",
+        "description": "普通雷元素攻击",
+        "energy_gain": 20.0,
+        "battle_points_gain": 1,
+        "break_power": 10
+      },
+      {
+        "name": "指令",
+        "type": "SPECIAL",
+        "cost": 1,
+        "multiplier": 0.0,
+        "damage_type": "THUNDER",
+        "description": "使我方指定角色行动提前100%，快速获得额外回合",
+        "energy_gain": 30.0,
+        "battle_points_gain": 0,
+        "break_power": 0,
+        "is_support_skill": true,
+        "support_modifier_name": "指令-拉条"
+      },
+      {
+        "name": "轮契",
+        "type": "ULT",
+        "cost": 3,
+        "multiplier": 0.0,
+        "damage_type": "THUNDER",
+        "description": "为我方全体增加爆伤，持续2回合",
+        "energy_gain": 5.0,
+        "battle_points_gain": 0,
+        "break_power": 0,
+        "target_count": -1,
+        "is_support_skill": true,
+        "support_modifier_name": "轮契-爆伤"
       }
     ]
   }

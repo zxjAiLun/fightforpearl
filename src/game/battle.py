@@ -494,6 +494,16 @@ class BattleEngine:
                     effect.remove_from(char)
             char.remove_expired_effects()
             char.end_turn_cleanup()
+            
+            # 处理Modifier回合结束
+            removed_mods = char.tick_modifiers()
+            for mod in removed_mods:
+                self._log(BattleEvent(
+                    turn=self._current_turn,
+                    actor=char,
+                    action="MODIFIER_END",
+                    detail=f"{char.name} 的 {mod.name} 效果结束",
+                ))
 
         dot_results = self.state.tick_break_dots()
         for char, dmg, name in dot_results:

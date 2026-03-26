@@ -456,6 +456,9 @@ class Character:
     follow_up_rules: list = field(default_factory=list)
     follow_up_triggers: list = field(default_factory=list)  # 追加攻击触发器列表
 
+    # Modifier系统
+    modifier_manager: Optional['ModifierManager'] = field(default=None, repr=False)
+
     kill_energy_gain: int = 10
     hit_energy_gain: int = 10
 
@@ -470,8 +473,37 @@ class Character:
         return self.current_hp > 0
 
     def can_act(self) -> bool:
-        """是否可行动（被冻结则不可）"""
-        return self.is_alive() and self.frozen_turns <= 0
+        """是否可行动（被冻结/眩晕/沉默则不可）"""
+        if not self.is_alive():
+            return False
+        if self.frozen_turns > 0:
+            return False
+        # 检查modifier状态效果
+        if self.modifier_manager:
+            effects = self.modifier_manager.get_status_effects()
+            if effects.get('stun', False) or effects.get('freeze', False):
+                return False
+            if effects.get('silence', False):
+                # 沉默时不能使用战技和大招，但普攻仍可用
+                pass
+        return True
+
+    def get_modifier_manager(self) -> 'ModifierManager':
+        """获取或创建ModifierManager"""
+        if self.modifier_manager is None:
+            from .modifier import ModifierManager
+            self.modifier_manager = ModifierManager(self)
+        return self.modifier_manager
+
+    def add_modifier(self, modifier: 'Modifier') -> None:
+        """添加Modifier"""
+        self.get_modifier_manager().add_modifier(modifier)
+
+    def tick_modifiers(self) -> list:
+        """回合结束时触发所有Modifier"""
+        if self.modifier_manager:
+            return self.modifier_manager.tick_modifiers()
+        return []
 
     def is_energy_full(self) -> bool:
         return self.energy >= self.energy_limit
@@ -597,6 +629,11 @@ class Skill:
     # 扩散：主目标受全额伤害，其他目标受扩散伤害
     spread_count: int = 0         # 扩散目标数量（0表示不使用扩散）
     spread_multiplier: float = 0.5 # 扩散目标伤害倍率
+
+    # 辅助/支持技能
+    # 这类技能不造成伤害，而是应用Modifier效果
+    is_support_skill: bool = False  # 是否为辅助技能（不造成伤害）
+    support_modifier_name: str = ""  # 辅助技能应用的Modifier名称
 
     def is_aoe(self) -> bool:
         """是否AOE技能（多目标）

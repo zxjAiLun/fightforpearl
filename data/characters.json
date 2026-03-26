@@ -323,5 +323,44 @@
         "description": "普攻命中生命值<=50%的敌方目标时，有60%概率触发追加攻击（全体冰属性伤害）"
       }
     ]
+  },
+  {
+    "name": "布洛妮娅",
+    "element": "THUNDER",
+    "energy_limit": 120,
+    "stat": {
+      "base_max_hp": 4000,
+      "base_atk": 1800,
+      "base_def": 800,
+      "base_spd": 135,
+      "hp_pct": 0.0,
+      "atk_pct": 0.0,
+      "def_pct": 0.0,
+      "spd_pct": 0.0,
+      "hp_flat": 0,
+      "atk_flat": 0,
+      "def_flat": 0,
+      "crit_rate": 0.65,
+      "crit_dmg": 1.5,
+      "effect_hit": 0.0,
+      "effect_res": 0.0,
+      "dmg_pct": 0.0,
+      "break_efficiency": 1.0,
+      "energy_recovery_rate": 1.0,
+      "physical_dmg_pct": 0.0,
+      "wind_dmg_pct": 0.0,
+      "thunder_dmg_pct": 50.0,
+      "fire_dmg_pct": 0.0,
+      "ice_dmg_pct": 0.0,
+      "quantum_dmg_pct": 0.0,
+      "imaginary_dmg_pct": 0.0,
+      "physical_res_pct": 0.0,
+      "wind_res_pct": 0.0,
+      "thunder_res_pct": 0.0,
+      "fire_res_pct": 0.0,
+      "ice_res_pct": 0.0,
+      "quantum_res_pct": 0.0,
+      "imaginary_res_pct": 0.0
+    }
   }
 ]
