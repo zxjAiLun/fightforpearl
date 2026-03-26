@@ -95,6 +95,23 @@ def create_character_from_preset(name: str) -> Character:
         base_spd=stat.base_spd,
     )
     assign_default_passives(char)
+    
+    # 从skills.json加载技能数据并分配
+    try:
+        import json
+        from pathlib import Path
+        # Path(__file__) = src/game/character.py
+        # parent = src/game
+        # parent.parent = src
+        # parent.parent.parent = 项目根目录
+        path = Path(__file__).parent.parent.parent / "data" / "skills.json"
+        with open(path, encoding="utf-8") as f:
+            skills_data = json.load(f)
+        from .skill import assign_default_skills
+        assign_default_skills(char, skills_data)
+    except Exception as e:
+        print(f"Warning: Failed to load skills for {name}: {e}")
+    
     return char
 
 
