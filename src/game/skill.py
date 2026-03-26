@@ -224,23 +224,94 @@ def select_player_skill(caster: Character, battle_state=None) -> Optional[Skill]
     return None
 
 
-def select_enemy_skill(caster: Character) -> Optional[Skill]:
-    """
-    敌人技能选择逻辑：
-    - 敌人固定使用普攻
-    - 确保敌人总是能执行行动
-    """
-    for skill in caster.skills:
-        if skill.type == SkillType.BASIC:
-            return skill
+def _load_enemy_ai_config() -> dict:
+    """加载敌人AI配置"""
+    try:
+        import json
+        from pathlib import Path
+        path = Path(__file__).parent.parent.parent / "data" / "enemy_ai.json"
+        with open(path, encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return {}
 
-    for skill in caster.skills:
-        if skill.type == SkillType.SPECIAL:
-            return skill
 
-    if caster.skills:
-        return caster.skills[0]
-    return None
+_ENEMY_AI_CONFIG = _load_enemy_ai_config()
+
+
+def select_enemy_targets(caster: Character, opponents: list[Character]) -> list[Character]:
+    """
+    敌人选择目标的逻辑：
+    - 优先选择血量最低的目标
+    - 存活角色按当前HP从小到大排序
+    """
+    if not opponents:
+        return []
+
+    alive = [c for c in opponents if c.is_alive()]
+    if not alive:
+        return []
+
+    # 按当前HP升序排列：血量最低的排前面
+    sorted_opponents = sorted(alive, key=lambda c: c.current_hp)
+    return sorted_opponents
+
+
+def select_enemy_skill(caster: Character, opponents: list[Character] = None) -> Optional[Skill]:
+    """
+    敌人技能选择逻辑（崩坏星穹铁道风格）：
+    1. 大招优先（能量满时） - ULT优先级最高
+    2. AOE技能优先（当有多个目标时）
+    3. 战技次之
+    4. 普攻最后（保底）
+
+    Args:
+        caster: 敌人角色
+        opponents: 可用目标列表（用于判断是否使用AOE）
+    """
+    if not caster.skills:
+        return None
+
+    # 按优先级分组技能
+    ult_skills = [s for s in caster.skills if s.type == SkillType.ULT]
+    special_skills = [s for s in caster.skills if s.type == SkillType.SPECIAL]
+    basic_skills = [s for s in caster.skills if s.type == SkillType.BASIC]
+
+    # 1. 能量满时优先使用大招
+    if caster.is_energy_full() and ult_skills:
+        # 如果有多目标，优先选择AOE大招
+        opponent_count = len([c for c in (opponents or []) if c.is_alive()]) if opponents else 0
+        aoe_ults = [s for s in ult_skills if s.is_aoe()]
+        non_aoe_ults = [s for s in ult_skills if not s.is_aoe()]
+
+        if opponent_count >= 2 and aoe_ults:
+            return aoe_ults[0]
+        return ult_skills[0]
+
+    # 2. 有多个目标时，优先使用AOE技能
+    if opponents:
+        opponent_count = len([c for c in opponents if c.is_alive()])
+        if opponent_count >= 2:
+            # 收集所有AOE技能（含大招、战技）
+            aoe_skills = []
+            if caster.is_energy_full():
+                aoe_skills.extend(aoe_ults)
+            aoe_skills.extend([s for s in special_skills if s.is_aoe()])
+            aoe_skills.extend([s for s in basic_skills if s.is_aoe()])
+
+            if aoe_skills:
+                return aoe_skills[0]
+
+    # 3. 战技次之
+    if special_skills:
+        return special_skills[0]
+
+    # 4. 普攻保底
+    if basic_skills:
+        return basic_skills[0]
+
+    # 最后保险：返回任意技能
+    return caster.skills[0] if caster.skills else None
 
 
 def build_skills_from_json(data: list[dict]) -> dict[str, list[Skill]]:

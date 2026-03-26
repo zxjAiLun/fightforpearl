@@ -275,18 +275,18 @@ class BattleEngine:
             actor.action_value += ACTION_COST / actor.stat.total_spd()
             return self.events[-1] if self.events else None
 
-        from .skill import select_enemy_skill, select_player_skill
+        from .skill import select_enemy_skill, select_player_skill, select_enemy_targets
         if actor.is_enemy:
-            skill = select_enemy_skill(actor)
+            # 敌人智能：选择最优技能（考虑AOE/能量），选择血量最低的目标
+            skill = select_enemy_skill(actor, opponents)
+            sorted_targets = select_enemy_targets(actor, opponents)
+            # AOE技能打全部目标，单目标技能打血量最低的
+            targets = sorted_targets if (skill and skill.is_aoe()) else sorted_targets[:1]
         else:
             skill = select_player_skill(actor, self.state)
+            targets = skill.get_targets(opponents)
 
-        if skill is None:
-            actor.action_value += ACTION_COST / actor.stat.total_spd()
-            return self.events[-1] if self.events else None
-
-        targets = skill.get_targets(opponents)
-        if not targets:
+        if skill is None or not targets:
             actor.action_value += ACTION_COST / actor.stat.total_spd()
             return self.events[-1] if self.events else None
 
@@ -612,12 +612,16 @@ class BattleEngine:
         if not opponents:
             return
         
-        skill = self._skill_executor.select_best_skill(actor, self.state)
-        if skill is None:
-            return
+        if actor.is_enemy:
+            from .skill import select_enemy_skill, select_enemy_targets
+            skill = select_enemy_skill(actor, opponents)
+            sorted_targets = select_enemy_targets(actor, opponents)
+            targets = sorted_targets if (skill and skill.is_aoe()) else sorted_targets[:1]
+        else:
+            skill = self._skill_executor.select_best_skill(actor, self.state)
+            targets = skill.get_targets(opponents) if skill else []
         
-        targets = skill.get_targets(opponents)
-        if not targets:
+        if skill is None or not targets:
             return
         
         results = self._skill_executor.execute(skill, actor, targets, self.state)

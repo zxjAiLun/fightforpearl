@@ -1,0 +1,21 @@
+{
+  "_comment": "敌人AI配置文件 - 崩坏星穹铁道风格智能敌人AI",
+  "version": "1.0",
+  "global": {
+    "target_priority": "lowest_hp",
+    "description": "全局敌人AI设置"
+  },
+  "skill_selection": {
+    "ult优先": true,
+    "aoe优先": true,
+    "description": "技能选择策略：ULT优先，能量满时必放；AOE技能在有多目标时优先"
+  },
+  "skill_priority": {
+    "ULT": 3,
+    "SPECIAL": 2,
+    "BASIC": 1,
+    "FOLLOW_UP": 0
+  },
+  "aoe_threshold": 2,
+  "description": "当敌人数 >= aee_threshold 时，优先使用AOE技能"
+}
