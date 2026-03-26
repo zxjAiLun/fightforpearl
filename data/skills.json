@@ -383,5 +383,124 @@
         "target_count": -1
       }
     ]
+  },
+  {
+    "character": "不死途",
+    "skills": [
+      {
+        "name": "银枪，冲刺攻击",
+        "type": "BASIC",
+        "cost": 0,
+        "multiplier": 0.50,
+        "damage_type": "QUANTUM",
+        "description": "50% Max HP + 25% ATK伤害",
+        "energy_gain": 20.0,
+        "battle_points_gain": 1,
+        "break_power": 20
+      },
+      {
+        "name": "残谱，血牛",
+        "type": "SPECIAL",
+        "cost": 1,
+        "multiplier": 0.0,
+        "damage_type": "QUANTUM",
+        "description": "消耗40%HP获得护盾，降低敌人速度",
+        "energy_gain": 0.0,
+        "battle_points_gain": 0,
+        "break_power": 30,
+        "is_support_skill": true,
+        "support_modifier_name": "血牛护盾"
+      },
+      {
+        "name": "绝息，锁命缚",
+        "type": "ULT",
+        "cost": 3,
+        "multiplier": 0.30,
+        "damage_type": "QUANTUM",
+        "description": "消耗100%HP，每损失1%HP获得3防御，造成损失值30%伤害",
+        "energy_gain": 0.0,
+        "battle_points_gain": 0,
+        "break_power": 60
+      }
+    ]
+  },
+  {
+    "character": "爻光",
+    "skills": [
+      {
+        "name": "落头鬼，暴攻",
+        "type": "BASIC",
+        "cost": 0,
+        "multiplier": 0.80,
+        "damage_type": "IMAGINARY",
+        "description": "80% ATK伤害",
+        "energy_gain": 20.0,
+        "battle_points_gain": 1,
+        "break_power": 20
+      },
+      {
+        "name": "身藐，身攻",
+        "type": "SPECIAL",
+        "cost": 1,
+        "multiplier": 0.30,
+        "damage_type": "IMAGINARY",
+        "description": "消耗30%HP，每损失1%HP伤害+1%，最高30%",
+        "energy_gain": 0.0,
+        "battle_points_gain": 0,
+        "break_power": 30
+      },
+      {
+        "name": "全体藐，魂攻",
+        "type": "ULT",
+        "cost": 3,
+        "multiplier": 0.40,
+        "damage_type": "IMAGINARY",
+        "description": "消耗100%HP，每损失1%HP获得3攻击力，造成损失值40%伤害",
+        "energy_gain": 0.0,
+        "battle_points_gain": 0,
+        "break_power": 60
+      }
+    ]
+  },
+  {
+    "character": "火花",
+    "skills": [
+      {
+        "name": "魔女的小黑魔法",
+        "type": "BASIC",
+        "cost": 0,
+        "multiplier": 0.50,
+        "damage_type": "FIRE",
+        "description": "50% ATK伤害",
+        "energy_gain": 20.0,
+        "battle_points_gain": 1,
+        "break_power": 20
+      },
+      {
+        "name": "魔女的四重罪",
+        "type": "SPECIAL",
+        "cost": 1,
+        "multiplier": 0.40,
+        "damage_type": "FIRE",
+        "description": "4次40%ATK伤害，每次递减15%",
+        "energy_gain": 0.0,
+        "battle_points_gain": 0,
+        "break_power": 30,
+        "ricochet_count": 3,
+        "ricochet_decay": 0.85
+      },
+      {
+        "name": "魔女的终夜狂舞",
+        "type": "ULT",
+        "cost": 3,
+        "multiplier": 0.80,
+        "damage_type": "FIRE",
+        "description": "3次80%ATK伤害，全体",
+        "energy_gain": 0.0,
+        "battle_points_gain": 0,
+        "break_power": 60,
+        "target_count": -1
+      }
+    ]
   }
 ]
