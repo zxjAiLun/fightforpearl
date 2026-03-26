@@ -14,7 +14,7 @@ class TestDamageSource:
     def test_basic_attack_has_basic_source(self):
         """普攻伤害来源为 BASIC"""
         player = create_character_from_preset("星")
-        enemy = create_enemy("敌人", level=50, element=Element.PHYSICAL, max_hp=2000, atk=80, defense=100, spd=90, weakness_elements=[])
+        enemy = create_enemy("敌人", level=50, hp_units=10.0, atk=80, defense=100, spd=90, weakness_elements=[])
 
         skill = Skill(
             name="基础攻击",
@@ -30,7 +30,7 @@ class TestDamageSource:
     def test_special_has_special_source(self):
         """战技伤害来源为 SPECIAL"""
         player = create_character_from_preset("姬子")
-        enemy = create_enemy("敌人", level=50, element=Element.FIRE, max_hp=2000, atk=80, defense=100, spd=90, weakness_elements=[])
+        enemy = create_enemy("敌人", level=50, hp_units=10.0, atk=80, defense=100, spd=90, weakness_elements=[])
 
         result = calculate_damage(player, enemy, 1.5, damage_source=DamageSource.SPECIAL)
         assert result.damage_source == DamageSource.SPECIAL
@@ -38,7 +38,7 @@ class TestDamageSource:
     def test_ult_has_ult_source(self):
         """终结技伤害来源为 ULT"""
         player = create_character_from_preset("姬子")
-        enemy = create_enemy("敌人", level=50, element=Element.FIRE, max_hp=2000, atk=80, defense=100, spd=90, weakness_elements=[])
+        enemy = create_enemy("敌人", level=50, hp_units=10.0, atk=80, defense=100, spd=90, weakness_elements=[])
 
         result = calculate_damage(player, enemy, 3.0, damage_source=DamageSource.ULT)
         assert result.damage_source == DamageSource.ULT
@@ -46,7 +46,7 @@ class TestDamageSource:
     def test_follow_up_has_follow_up_source(self):
         """追击伤害来源为 FOLLOW_UP"""
         player = create_character_from_preset("星")
-        enemy = create_enemy("敌人", level=50, element=Element.PHYSICAL, max_hp=2000, atk=80, defense=100, spd=90, weakness_elements=[])
+        enemy = create_enemy("敌人", level=50, hp_units=10.0, atk=80, defense=100, spd=90, weakness_elements=[])
 
         result = calculate_damage(player, enemy, 0.5, damage_source=DamageSource.FOLLOW_UP)
         assert result.damage_source == DamageSource.FOLLOW_UP
@@ -86,7 +86,7 @@ class TestFollowUpTrigger:
     def test_follow_up_triggers_after_skill(self):
         """主动技能后，追击概率触发"""
         player = create_character_from_preset("姬子")  # 火
-        enemy = create_enemy("敌人", level=50, element=Element.FIRE, max_hp=5000, atk=80, defense=100, spd=90, weakness_elements=[])
+        enemy = create_enemy("敌人", level=50, hp_units=25.0, atk=80, defense=100, spd=90, weakness_elements=[])
 
         # 给角色添加追击规则（普攻后50%概率追击）
         rule = FollowUpRule(
@@ -104,7 +104,7 @@ class TestFollowUpTrigger:
 
         # 处理一回合
         alive = [player, enemy]
-        engine._process_action(player, alive)
+        engine._process_action(player, alive, 1)
 
         # 检查是否有追击事件
         follow_up_events = [e for e in engine.events if e.action == "FOLLOW_UP"]
@@ -114,7 +114,7 @@ class TestFollowUpTrigger:
     def test_follow_up_uses_multiplier(self):
         """追击使用正确的倍率"""
         player = create_character_from_preset("星")
-        enemy = create_enemy("敌人", level=50, element=Element.PHYSICAL, max_hp=5000, atk=100, defense=100, spd=90, weakness_elements=[])
+        enemy = create_enemy("敌人", level=50, hp_units=25.0, atk=100, defense=100, spd=90, weakness_elements=[])
 
         rule = FollowUpRule(
             name="测试追击",
@@ -130,7 +130,7 @@ class TestFollowUpTrigger:
         engine = BattleEngine(state)
 
         alive = [player, enemy]
-        engine._process_action(player, alive)
+        engine._process_action(player, alive, 1)
 
         follow_up_events = [e for e in engine.events if e.action == "FOLLOW_UP"]
         assert len(follow_up_events) > 0
@@ -138,7 +138,7 @@ class TestFollowUpTrigger:
     def test_no_follow_up_if_chance_miss(self):
         """概率未触发时不追击"""
         player = create_character_from_preset("星")
-        enemy = create_enemy("敌人", level=50, element=Element.PHYSICAL, max_hp=5000, atk=80, defense=100, spd=90, weakness_elements=[])
+        enemy = create_enemy("敌人", level=50, hp_units=25.0, atk=80, defense=100, spd=90, weakness_elements=[])
 
         rule = FollowUpRule(
             name="不触发追击",
@@ -153,7 +153,7 @@ class TestFollowUpTrigger:
         engine = BattleEngine(state)
 
         alive = [player, enemy]
-        engine._process_action(player, alive)
+        engine._process_action(player, alive, 1)
 
         follow_up_events = [e for e in engine.events if e.action == "FOLLOW_UP"]
         assert len(follow_up_events) == 0
@@ -161,7 +161,7 @@ class TestFollowUpTrigger:
     def test_follow_up_only_on_correct_trigger(self):
         """只在释放正确技能类型时触发追击"""
         player = create_character_from_preset("星")
-        enemy = create_enemy("敌人", level=50, element=Element.PHYSICAL, max_hp=5000, atk=80, defense=100, spd=90, weakness_elements=[])
+        enemy = create_enemy("敌人", level=50, hp_units=25.0, atk=80, defense=100, spd=90, weakness_elements=[])
 
         # 追击只在SPECIAL时触发
         rule = FollowUpRule(
@@ -178,9 +178,9 @@ class TestFollowUpTrigger:
         engine = BattleEngine(state)
 
         alive = [player, enemy]
-        engine._process_action(player, alive)
+        engine._process_action(player, alive, 1)
 
-        # 普攻不触发战技追击
+        # 玩家没有触发追击
         follow_up_events = [e for e in engine.events if e.action == "FOLLOW_UP"]
         assert len(follow_up_events) == 0
 
@@ -192,7 +192,7 @@ class TestFollowUpInBattle:
     def test_full_battle_with_follow_up(self):
         """完整战斗流程中追击正常触发"""
         player = create_character_from_preset("姬子")
-        enemy = create_enemy("敌人", level=50, element=Element.FIRE, max_hp=3000, atk=80, defense=80, spd=70, weakness_elements=[])
+        enemy = create_enemy("敌人", level=50, hp_units=15.0, atk=80, defense=80, spd=70, weakness_elements=[])
 
         # 玩家每回合用战技（因为能量回1点），所以追击触发条件设战技
         rule = FollowUpRule(

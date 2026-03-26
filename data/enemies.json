@@ -1,0 +1,22 @@
+[
+  {
+    "name": "可可利亚",
+    "level": 90,
+    "hp_units": 10,
+    "atk": 663,
+    "def": 1100,
+    "spd": 132,
+    "weakness_elements": ["THUNDER", "FIRE"],
+    "toughness": 40
+  },
+  {
+    "name": "史瓦罗",
+    "level": 90,
+    "hp_units": 10,
+    "atk": 663,
+    "def": 1100,
+    "spd": 132,
+    "weakness_elements": ["THUNDER", "FIRE"],
+    "toughness": 40
+  }
+]

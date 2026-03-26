@@ -34,6 +34,26 @@ def calculate_def_reduction(defender_def: int, attacker_level: int) -> float:
     return defender_def / (defender_def + 200.0 + 10.0 * attacker_level)
 
 
+def calculate_def_reduction_for_player(attacker_level: int, defender_def: int, ignore_def: float = 0.0) -> float:
+    """
+    角色攻击怪物时的防御减伤公式（崩铁风格）
+    防御系数 = 100 / (100 + (敌人等级 × 20) × (1 - 无视防御))
+    """
+    effective_penetration = max(0.0, 1.0 - ignore_def)
+    denominator = 100 + (attacker_level * 20) * effective_penetration
+    return 100 / denominator
+
+
+def calculate_def_reduction_for_enemy(attacker_level: int, defender_def: int) -> float:
+    """
+    怪物攻击角色时的防御减伤公式（崩铁风格）
+    防御系数 = (10 × 敌人等级 + 200) / (100 × 敌人等级 + 200 + 角色防御)
+    """
+    numerator = 10 * attacker_level + 200
+    denominator = 100 * attacker_level + 200 + defender_def
+    return numerator / denominator
+
+
 def calculate_break_damage(attacker: Character, defender: Character, break_type: BreakEffectType) -> int:
     """
     击破触发伤害（弱点击破时瞬间造成）
@@ -65,6 +85,7 @@ def calculate_damage(
     ignore_def: float = 0.0,
     fixed_damage: int = 0,
     damage_source: DamageSource = DamageSource.BASIC,
+    attacker_is_player: bool = True,
 ) -> DamageResult:
     """
     伤害计算主公式
@@ -80,8 +101,11 @@ def calculate_damage(
     base_damage = atk * skill_multiplier + base_damage_add
 
     # === 3. 防御减伤 ===
-    effective_def = defender.stat.total_def() * (1 - ignore_def)
-    def_reduction = calculate_def_reduction(int(effective_def), attacker.level)
+    defender_def = defender.stat.total_def()
+    if attacker_is_player:
+        def_reduction = calculate_def_reduction_for_player(attacker.level, defender_def, ignore_def)
+    else:
+        def_reduction = calculate_def_reduction_for_enemy(attacker.level, defender_def)
     after_def = base_damage * (1 - def_reduction)
 
     # === 4. 增伤区 ===
@@ -90,9 +114,14 @@ def calculate_damage(
         total_dmg_pct += effect.dmg_pct_bonus
 
     # === 5. 暴击 ===
-    crit_roll = random.random()
-    is_crit = crit_roll < attacker.stat.crit_rate
-    crit_mult = attacker.stat.crit_dmg if is_crit else 1.0
+    # 敌人不进行暴击判定
+    if attacker.is_enemy:
+        is_crit = False
+        crit_mult = 1.0
+    else:
+        crit_roll = random.random()
+        is_crit = crit_roll < attacker.stat.crit_rate
+        crit_mult = attacker.stat.crit_dmg if is_crit else 1.0
 
     # === 6. 易伤区 ===
     total_vuln = 1.0

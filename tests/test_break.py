@@ -14,16 +14,14 @@ def make_player(name: str = "星"):
 
 def make_enemy(
     name: str = "敌人",
-    element: Element = Element.PHYSICAL,
     weakness: list[Element] = None,
 ):
     if weakness is None:
-        weakness = [element]
+        weakness = [Element.PHYSICAL]
     return create_enemy(
         name=name,
         level=50,
-        element=element,
-        max_hp=2000,
+        hp_units=10.0,
         atk=100,
         defense=100,
         spd=90,
@@ -38,7 +36,7 @@ class TestBreakTrigger:
     def test_break_triggers_on_weakness_hit(self):
         """攻击敌人弱点元素时触发击破"""
         player = make_player("三月萤")  # 风
-        enemy = make_enemy("机械兵", Element.FIRE, [Element.WIND])
+        enemy = make_enemy("机械兵", [Element.WIND])
 
         # enemy韧性和弱点
         enemy.toughness = 0.0  # 削到0触发击破
@@ -54,7 +52,7 @@ class TestBreakTrigger:
     def test_no_break_without_weakness(self):
         """攻击非弱点元素不触发击破"""
         player = make_player("星")  # 物理
-        enemy = make_enemy("机械兵", Element.FIRE, [Element.ICE])  # 弱点是ICE，不是物理
+        enemy = make_enemy("机械兵", [Element.ICE])  # 弱点是ICE，不是物理
 
         enemy.toughness = 0.0
         state = BattleState(player_team=[player], enemy_team=[enemy])
@@ -71,7 +69,7 @@ class TestBreakTrigger:
 class TestPhysicalBreak:
     def test_slash_deals_hp_percent_damage(self):
         """裂伤：按目标HP%造成DOT"""
-        enemy = make_enemy("机械兵", Element.PHYSICAL, [Element.PHYSICAL])
+        enemy = make_enemy("机械兵", [Element.PHYSICAL])
         enemy.toughness = 0.0
         enemy.current_hp = 1000
 
@@ -107,7 +105,7 @@ class TestPhysicalBreak:
 class TestFireBreak:
     def test_burn_creates_dot(self):
         """灼烧：火属性DOT"""
-        enemy = make_enemy("机械兵", Element.FIRE, [Element.FIRE])
+        enemy = make_enemy("机械兵", [Element.FIRE])
         player = make_player("姬子")  # 火
         enemy.toughness = 0.0
 
@@ -123,7 +121,7 @@ class TestIceBreak:
     def test_freeze_prevents_action(self):
         """冻结：角色无法行动"""
         player = make_player("三月萤")
-        enemy = make_enemy("敌人", Element.ICE, [Element.ICE])
+        enemy = make_enemy("敌人", [Element.ICE])
         enemy.toughness = 0.0
 
         state = BattleState(player_team=[player], enemy_team=[enemy])
@@ -139,7 +137,7 @@ class TestThunderBreak:
     def test_shock_creates_dot(self):
         """触电：雷属性DOT"""
         player = make_player("丹恒")  # 雷
-        enemy = make_enemy("机械兵", Element.THUNDER, [Element.THUNDER])
+        enemy = make_enemy("机械兵", [Element.THUNDER])
         enemy.toughness = 0.0
 
         state = BattleState(player_team=[player], enemy_team=[enemy])
@@ -154,7 +152,7 @@ class TestWindBreak:
     def test_shear_stacks(self):
         """风化：可叠加"""
         player = make_player("三月萤")  # 风
-        enemy = make_enemy("机械兵", Element.WIND, [Element.WIND])
+        enemy = make_enemy("机械兵", [Element.WIND])
         enemy.toughness = 0.0
 
         state = BattleState(player_team=[player], enemy_team=[enemy])
@@ -179,7 +177,7 @@ class TestQuantumBreak:
     def test_entangle_delays_action(self):
         """纠缠：行动延后 + 下回合额外伤害"""
         player = make_player("银狼")  # 量子
-        enemy = make_enemy("机械兵", Element.QUANTUM, [Element.QUANTUM])
+        enemy = make_enemy("机械兵", [Element.QUANTUM])
         enemy.toughness = 0.0
 
         state = BattleState(player_team=[player], enemy_team=[enemy])
@@ -207,7 +205,7 @@ class TestImaginaryBreak:
     def test_imprision_delays_and_slows(self):
         """禁锢：行动延后 + 减速"""
         player = make_player("瓦尔特")  # 虚数
-        enemy = make_enemy("机械兵", Element.IMAGINARY, [Element.IMAGINARY])
+        enemy = make_enemy("机械兵", [Element.IMAGINARY])
         enemy.toughness = 0.0
         initial_spd_pct = enemy.stat.spd_pct
 
@@ -243,8 +241,8 @@ class TestDotLifecycle:
 
     def test_tick_break_dots_returns_damage(self):
         """tick_break_dots 返回所有DOT伤害"""
-        enemy1 = make_enemy("敌人1", Element.FIRE, [Element.FIRE])
-        enemy2 = make_enemy("敌人2", Element.THUNDER, [Element.THUNDER])
+        enemy1 = make_enemy("敌人1", [Element.FIRE])
+        enemy2 = make_enemy("敌人2", [Element.THUNDER])
         player = make_player("姬子")
 
         for e in [enemy1, enemy2]:

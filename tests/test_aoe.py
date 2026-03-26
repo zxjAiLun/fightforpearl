@@ -71,16 +71,15 @@ class TestMultiTarget:
 class TestAoeDamage:
     def test_aoe_skill_applies_aoe_multiplier(self):
         """AOE技能对每个目标应用 aoe_multiplier 折扣"""
-        player = create_character_from_preset("姬子")  # 火
-        enemy1 = create_enemy("敌人1", level=50, element=Element.FIRE, max_hp=5000, atk=50, defense=50, spd=80, weakness_elements=[Element.FIRE])
-        enemy2 = create_enemy("敌人2", level=50, element=Element.FIRE, max_hp=5000, atk=50, defense=50, spd=80, weakness_elements=[Element.FIRE])
+        player = create_character_from_preset("姬子")
+        enemy1 = create_enemy("敌人1", weakness_elements=[Element.FIRE], hp_units=1)
+        enemy2 = create_enemy("敌人2", weakness_elements=[Element.FIRE], hp_units=1)
         enemy1.toughness = 0.0
         enemy2.toughness = 0.0
 
         state = BattleState(player_team=[player], enemy_team=[enemy1, enemy2])
         engine = BattleEngine(state)
 
-        # 构造AOE技能
         aoe_skill = Skill(
             name="火焰散射",
             type=SkillType.SPECIAL,
@@ -91,14 +90,12 @@ class TestAoeDamage:
             aoe_multiplier=0.8,
         )
         player.skills = [aoe_skill]
-        player.current_energy = 1.0
+        player.energy = 30.0
 
         executor = SkillExecutor()
         results = executor.execute(aoe_skill, player, [enemy1, enemy2])
 
         assert len(results) == 2
-        # 每个目标受到的伤害 = ATK * 1.5 * 0.8 = ATK * 1.2
-        # 相比单体 1.5 有折扣
 
     def test_single_target_skill_no_aoe_penalty(self):
         """单体技能没有 AOE 惩罚"""
@@ -129,12 +126,11 @@ class TestAoeBreakEffects:
     def test_aoe_hits_break_multiple_enemies(self):
         """AOE技能对每个敌人独立判定击破"""
         player = create_character_from_preset("姬子")  # 火角色
-        enemy1 = create_enemy("敌人1", level=50, element=Element.FIRE, max_hp=2000, atk=50, defense=50, spd=80, weakness_elements=[Element.FIRE])
-        enemy2 = create_enemy("敌人2", level=50, element=Element.FIRE, max_hp=2000, atk=50, defense=50, spd=80, weakness_elements=[Element.FIRE])
+        enemy1 = create_enemy("敌人1", weakness_elements=[Element.FIRE])
+        enemy2 = create_enemy("敌人2", weakness_elements=[Element.FIRE])
 
         state = BattleState(player_team=[player], enemy_team=[enemy1, enemy2])
 
-        # 手动对两个敌人触发击破（绕过韧性检测）
         br1 = state.apply_break(enemy1, player, BreakEffectType.BURN, Element.FIRE)
         br2 = state.apply_break(enemy2, player, BreakEffectType.BURN, Element.FIRE)
 
@@ -146,13 +142,12 @@ class TestBattleAoe:
     def test_aoe_skill_targets_multiple_in_battle(self):
         """战斗中AOE技能对多个敌人造成伤害"""
         player = create_character_from_preset("姬子")
-        enemy1 = create_enemy("敌人1", level=50, element=Element.FIRE, max_hp=5000, atk=80, defense=60, spd=70, weakness_elements=[Element.FIRE])
-        enemy2 = create_enemy("敌人2", level=50, element=Element.FIRE, max_hp=5000, atk=80, defense=60, spd=70, weakness_elements=[Element.FIRE])
+        enemy1 = create_enemy("敌人1", weakness_elements=[Element.FIRE])
+        enemy2 = create_enemy("敌人2", weakness_elements=[Element.FIRE])
 
         state = BattleState(player_team=[player], enemy_team=[enemy1, enemy2])
         engine = BattleEngine(state)
 
-        # 手动构造AOE技能（target_count=-1）
         fire_aoe = Skill(
             name="火焰散射",
             type=SkillType.ULT,
@@ -163,14 +158,11 @@ class TestBattleAoe:
             aoe_multiplier=0.8,
         )
 
-        # 替换玩家技能为AOE技能
         player.skills = [fire_aoe]
-        player.current_energy = 3.0
+        player.energy = 120
 
-        # 直接处理一回合
         alive = [player, enemy1, enemy2]
-        engine._process_action(player, alive)
+        engine._process_action(player, alive, 1)
 
-        # 两个敌人都应该受到伤害（AOE命中全体）
-        assert enemy1.current_hp < 5000
-        assert enemy2.current_hp < 5000
+        assert enemy1.current_hp < enemy1.stat.base_max_hp
+        assert enemy2.current_hp < enemy2.stat.base_max_hp

@@ -4,6 +4,9 @@ from dataclasses import dataclass, field
 from enum import Enum, auto
 from typing import Optional
 
+HP_LINEAR_VALUES = {0: 21997.729, 1: 26954.786}
+HEART_HP_BASE = 21997.729
+
 
 class Element(Enum):
     """元素类型（仅影响弱点击破和附加状态，不影响伤害倍率）"""
@@ -87,38 +90,59 @@ SHEAR_MAX_STACKS = 3
 # 纠缠受击增伤上限
 ENTANGLE_HIT_CAP = 5
 
+# 敌人血量标准（1 heart = 90级标准血量）
+HEART_HP_BASE = 21997.729
+
+# 敌人血量线性值（通过难度索引区分）
+HP_LINEAR_VALUES = {
+    0: HEART_HP_BASE,      # 默认难度
+    1: 26954.786,          # 混沌难度
+}
+
 
 @dataclass
 class Stat:
     """角色基础属性（含百分比加成）"""
-    # --- 基础值 ---
     base_max_hp: int = 100
     base_atk: int = 50
     base_def: int = 30
     base_spd: int = 100
 
-    # --- 百分比加成 ---
     hp_pct: float = 0.0
     atk_pct: float = 0.0
     def_pct: float = 0.0
     spd_pct: float = 0.0
 
-    # --- 固定值加成 ---
     hp_flat: int = 0
     atk_flat: int = 0
     def_flat: int = 0
 
-    # --- 暴击/抵抗 ---
     crit_rate: float = 0.05
     crit_dmg: float = 0.50
     effect_hit: float = 0.00
     effect_res: float = 0.00
 
-    # --- 伤害加成区 ---
     dmg_pct: float = 0.0
 
-    # --- 削韧 ---
     break_efficiency: float = 1.0
+
+    energy_recovery_rate: float = 1.0
+
+    physical_dmg_pct: float = 0.0
+    wind_dmg_pct: float = 0.0
+    thunder_dmg_pct: float = 0.0
+    fire_dmg_pct: float = 0.0
+    ice_dmg_pct: float = 0.0
+    quantum_dmg_pct: float = 0.0
+    imaginary_dmg_pct: float = 0.0
+
+    physical_res_pct: float = 0.0
+    wind_res_pct: float = 0.0
+    thunder_res_pct: float = 0.0
+    fire_res_pct: float = 0.0
+    ice_res_pct: float = 0.0
+    quantum_res_pct: float = 0.0
+    imaginary_res_pct: float = 0.0
 
     def total_max_hp(self) -> int:
         return int((self.base_max_hp + self.hp_flat) * (1 + self.hp_pct))
@@ -131,6 +155,30 @@ class Stat:
 
     def total_spd(self) -> int:
         return int(self.base_spd * (1 + self.spd_pct))
+
+    def get_elemental_dmg_pct(self, element: 'Element') -> float:
+        element_map = {
+            Element.PHYSICAL: self.physical_dmg_pct,
+            Element.WIND: self.wind_dmg_pct,
+            Element.THUNDER: self.thunder_dmg_pct,
+            Element.FIRE: self.fire_dmg_pct,
+            Element.ICE: self.ice_dmg_pct,
+            Element.QUANTUM: self.quantum_dmg_pct,
+            Element.IMAGINARY: self.imaginary_dmg_pct,
+        }
+        return element_map.get(element, 0.0)
+
+    def get_elemental_res_pct(self, element: 'Element') -> float:
+        element_map = {
+            Element.PHYSICAL: self.physical_res_pct,
+            Element.WIND: self.wind_res_pct,
+            Element.THUNDER: self.thunder_res_pct,
+            Element.FIRE: self.fire_res_pct,
+            Element.ICE: self.ice_res_pct,
+            Element.QUANTUM: self.quantum_res_pct,
+            Element.IMAGINARY: self.imaginary_res_pct,
+        }
+        return element_map.get(element, 0.0)
 
     def clone(self) -> Stat:
         return Stat(
@@ -151,6 +199,21 @@ class Stat:
             effect_res=self.effect_res,
             dmg_pct=self.dmg_pct,
             break_efficiency=self.break_efficiency,
+            energy_recovery_rate=self.energy_recovery_rate,
+            physical_dmg_pct=self.physical_dmg_pct,
+            wind_dmg_pct=self.wind_dmg_pct,
+            thunder_dmg_pct=self.thunder_dmg_pct,
+            fire_dmg_pct=self.fire_dmg_pct,
+            ice_dmg_pct=self.ice_dmg_pct,
+            quantum_dmg_pct=self.quantum_dmg_pct,
+            imaginary_dmg_pct=self.imaginary_dmg_pct,
+            physical_res_pct=self.physical_res_pct,
+            wind_res_pct=self.wind_res_pct,
+            thunder_res_pct=self.thunder_res_pct,
+            fire_res_pct=self.fire_res_pct,
+            ice_res_pct=self.ice_res_pct,
+            quantum_res_pct=self.quantum_res_pct,
+            imaginary_res_pct=self.imaginary_res_pct,
         )
 
 
@@ -162,24 +225,41 @@ class Character:
     element: Element = Element.PHYSICAL
     stat: Stat = field(default_factory=Stat)
     current_hp: int = 100
-    current_energy: float = 0.0
     skills: list = field(default_factory=list)
     passives: list = field(default_factory=list)
     effects: list = field(default_factory=list)
     passives_triggered_this_turn: list = field(default_factory=list)
 
-    # --- 敌人特有 ---
+    energy: float = 0.0
+    energy_limit: int = 120
+    initial_energy: float = 0.0
+
+    battle_points: int = 3
+    battle_points_limit: int = 5
+    initial_battle_points: int = 3
+
+    action_value: float = 0.0
+    base_spd: int = 100
+
     is_enemy: bool = False
-    weakness_elements: list = field(default_factory=list)  # 弱点元素（可破韧）
-    toughness: float = 100.0  # 韧性值（削到0触发击破）
+    weakness_elements: list = field(default_factory=list)
+    toughness: float = 100.0
 
-    # --- 状态异常 ---
-    frozen_turns: int = 0           # 冻结回合数 >0 则无法行动
-    action_delay: float = 0.0       # 行动延后值（行动时清零）
-    entangle_hit_stacks: int = 0    # 纠缠受击增伤层数（受击时+1，上限5）
+    frozen_turns: int = 0
+    action_delay: float = 0.0
+    entangle_hit_stacks: int = 0
 
-    # --- 追击规则 ---
-    follow_up_rules: list = field(default_factory=list)  # 追击触发规则
+    follow_up_rules: list = field(default_factory=list)
+
+    kill_energy_gain: int = 10
+    hit_energy_gain: int = 10
+
+    difficulty_index: int = 0
+    hp_units: float = 1.0
+    variant_hp_coeff: float = 1.0
+    elite_coeff: float = 1.0
+    stage_hp_coeff: float = 1.0
+    stage_toughness_coeff: float = 1.0
 
     def is_alive(self) -> bool:
         return self.current_hp > 0
@@ -189,7 +269,77 @@ class Character:
         return self.is_alive() and self.frozen_turns <= 0
 
     def is_energy_full(self) -> bool:
-        return self.current_energy >= 3.0
+        return self.energy >= self.energy_limit
+
+    def add_energy(self, amount: float, affected_by_recovery_rate: bool = True) -> None:
+        if affected_by_recovery_rate:
+            amount *= self.stat.energy_recovery_rate
+        self.energy = min(self.energy + amount, self.energy_limit)
+
+    def add_battle_points(self, amount: int = 1) -> None:
+        self.battle_points = min(self.battle_points + amount, self.battle_points_limit)
+
+    def use_battle_points(self, amount: int = 1) -> bool:
+        if self.battle_points >= amount:
+            self.battle_points -= amount
+            return True
+        return False
+
+    def calculate_hp(self) -> int:
+        """计算敌人最终血量"""
+        if not self.is_enemy:
+            return self.stat.total_max_hp()
+        linear_value = HP_LINEAR_VALUES.get(self.difficulty_index, HEART_HP_BASE)
+        return int(self.hp_units * linear_value * self.variant_hp_coeff * self.elite_coeff * self.stage_hp_coeff)
+
+    def get_elemental_res(self, element: Element) -> float:
+        """获取敌人对指定元素的抗性"""
+        if not self.is_enemy:
+            return 0.0
+        if element in self.weakness_elements:
+            return 0.0
+        return 0.2
+
+    def calculate_init_action_value(self, is_first_round: bool = True) -> float:
+        """计算初始行动值 = 行动所需距离 / 速度
+        第一轮: 150 / 速度
+        后续: 100 / 速度
+        """
+        spd = self.stat.total_spd()
+        if spd <= 0:
+            return 1.5 if is_first_round else 1.0
+        base_av = 150.0 if is_first_round else 100.0
+        return base_av / spd
+
+    def advance_action(self, subsequent_av: float = 100.0) -> None:
+        """角色行动后，重置行动值（加回后续行动值）"""
+        self.action_value += subsequent_av
+
+    def apply_speed_change(self, new_speed: int) -> None:
+        """速度变化后重新计算行动值"""
+        current_distance = self.action_value * self.stat.total_spd()
+        self.stat.base_spd = new_speed
+        new_spd = self.stat.total_spd()
+        if new_spd > 0:
+            self.action_value = current_distance / new_spd
+
+    def apply_pull_forward(self, pct: float) -> None:
+        """拉条效果：提前 pct%"""
+        reduction = self.ACTION_COST * pct
+        self.action_value = max(0, self.action_value - reduction)
+
+    def apply_delay(self, pct: float) -> None:
+        """推条效果：延后 pct%"""
+        delay = self.ACTION_COST * pct
+        self.action_value += delay
+
+    def reset_action_value_after_freeze(self) -> None:
+        """冻结解除后，行动值设为5000（半回合）"""
+        spd = self.stat.total_spd()
+        if spd > 0:
+            self.action_value = 5000 / spd
+        else:
+            self.action_value = 50.0
 
     def heal(self, amount: int) -> None:
         self.current_hp = min(self.stat.total_max_hp(), self.current_hp + amount)
@@ -206,7 +356,6 @@ class Character:
     def end_turn_cleanup(self) -> None:
         """回合结束清理"""
         self.passives_triggered_this_turn.clear()
-        # 冻结回合递减
         if self.frozen_turns > 0:
             self.frozen_turns -= 1
 
@@ -221,9 +370,12 @@ class Skill:
     damage_type: Element = Element.PHYSICAL
     description: str = ""
     break_type: BreakEffectType = BreakEffectType.NONE
-    # 多目标支持
-    target_count: int = 1       # 攻击目标数量（1=单体，>1=指定数量，-1=全体）
-    aoe_multiplier: float = 0.8  # AOE倍率折扣（单体技能此字段无意义）
+    target_count: int = 1
+    aoe_multiplier: float = 0.8
+    energy_gain: float = 10.0
+    battle_points_gain: int = 0
+    hit_energy_gain: int = 10
+    break_power: float = 0.0
 
     def is_aoe(self) -> bool:
         return self.target_count != 1
@@ -231,8 +383,8 @@ class Skill:
     def get_targets(self, available: list) -> list:
         """从可用目标列表中返回本次技能命中的目标"""
         if self.target_count == -1:
-            return available  # 全体
-        return available[: self.target_count]  # 前N个
+            return available
+        return available[: self.target_count]
 
     def __str__(self) -> str:
         return f"{self.name}[{self.type.name}]"
@@ -354,8 +506,27 @@ class BattleState:
     turn: int = 1
     current_turn_index: int = 0
 
-    # 击破状态（key=角色，value=击破状态）
     break_statuses: dict[int, BreakStatus] = field(default_factory=dict)
+
+    shared_battle_points: int = 3
+    shared_battle_points_limit: int = 5
+
+    first_round_av: float = 150.0
+    subsequent_av: float = 100.0
+
+    def calculate_init_action_value(self, is_first_round: bool = True) -> float:
+        spd = 100
+        base_av = self.first_round_av if is_first_round else self.subsequent_av
+        return base_av / spd
+
+    def add_shared_battle_points(self, amount: int = 1) -> None:
+        self.shared_battle_points = min(self.shared_battle_points + amount, self.shared_battle_points_limit)
+
+    def use_shared_battle_points(self, amount: int = 1) -> bool:
+        if self.shared_battle_points >= amount:
+            self.shared_battle_points -= amount
+            return True
+        return False
 
     def _break_status(self, char: Character) -> BreakStatus:
         """获取或创建角色的击破状态"""

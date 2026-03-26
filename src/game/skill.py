@@ -2,7 +2,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Optional
 
-from .models import Character, Skill, SkillType, Element, Passive, Effect, BreakEffectType, ELEMENT_BREAK_MAP, DamageSource
+from .models import Character, Skill, SkillType, Element, Passive, Effect, BreakEffectType, ELEMENT_BREAK_MAP, DamageSource, BattleState
 
 if TYPE_CHECKING:
     from .damage import DamageResult
@@ -11,16 +11,12 @@ if TYPE_CHECKING:
 class SkillExecutor:
     """技能执行器"""
 
-    MAX_ENERGY = 3.0
-    ULT_COST = 3.0
-    SPECIAL_COST = 1.0
-    BASIC_COST = 0.0
-
     def execute(
         self,
         skill: Skill,
         caster: Character,
         targets: list[Character],
+        battle_state: 'BattleState' = None,
     ) -> list[tuple[Character, 'DamageResult']]:
         """
         执行技能，返回 (目标, 伤害结果) 列表。
@@ -30,11 +26,11 @@ class SkillExecutor:
         from .damage import calculate_damage, apply_damage
 
         if skill.type == SkillType.BASIC:
-            return self._execute_basic(skill, caster, targets)
+            return self._execute_basic(skill, caster, targets, battle_state)
         elif skill.type == SkillType.SPECIAL:
-            return self._execute_special(skill, caster, targets)
+            return self._execute_special(skill, caster, targets, battle_state)
         elif skill.type == SkillType.ULT:
-            return self._execute_ult(skill, caster, targets)
+            return self._execute_ult(skill, caster, targets, battle_state)
         return []
 
     def _effective_multiplier(self, skill: Skill) -> float:
@@ -48,20 +44,26 @@ class SkillExecutor:
         skill: Skill,
         caster: Character,
         targets: list[Character],
+        battle_state: 'BattleState' = None,
     ) -> list[tuple[Character, 'DamageResult']]:
-        """普攻：ATK × 1.0 倍率，不消耗能量"""
+        """普攻：ATK × 1.0 倍率，回复能量和战绩点"""
         from .damage import calculate_damage, apply_damage
         eff_mult = self._effective_multiplier(skill)
         results = []
+        attacker_is_player = not caster.is_enemy
         for target in targets:
             result = calculate_damage(
                 caster, target,
                 skill_multiplier=eff_mult,
                 damage_type=skill.damage_type,
                 damage_source=DamageSource.BASIC,
+                attacker_is_player=attacker_is_player,
             )
             apply_damage(caster, target, result)
             results.append((target, result))
+        caster.add_energy(skill.energy_gain)
+        if battle_state is not None and skill.battle_points_gain > 0 and not caster.is_enemy:
+            battle_state.add_shared_battle_points(skill.battle_points_gain)
         self._trigger_passives(caster, SkillType.BASIC)
         return results
 
@@ -70,26 +72,26 @@ class SkillExecutor:
         skill: Skill,
         caster: Character,
         targets: list[Character],
+        battle_state: 'BattleState' = None,
     ) -> list[tuple[Character, 'DamageResult']]:
-        """战技：ATK × 1.5 倍率，消耗 1 点能量"""
+        """战技：ATK × 1.5 倍率，回复能量"""
         from .damage import calculate_damage, apply_damage
-
-        if caster.current_energy < self.SPECIAL_COST:
-            return []
 
         eff_mult = self._effective_multiplier(skill)
         results = []
+        attacker_is_player = not caster.is_enemy
         for target in targets:
             result = calculate_damage(
                 caster, target,
                 skill_multiplier=eff_mult,
                 damage_type=skill.damage_type,
                 damage_source=DamageSource.SPECIAL,
+                attacker_is_player=attacker_is_player,
             )
             apply_damage(caster, target, result)
             results.append((target, result))
 
-        caster.current_energy -= self.SPECIAL_COST
+        caster.add_energy(skill.energy_gain)
         self._trigger_passives(caster, SkillType.SPECIAL)
         return results
 
@@ -98,27 +100,29 @@ class SkillExecutor:
         skill: Skill,
         caster: Character,
         targets: list[Character],
+        battle_state: 'BattleState' = None,
     ) -> list[tuple[Character, 'DamageResult']]:
-        """大招：ATK × 3.0 倍率，消耗全部能量（需 ≥3 点）"""
+        """大招：ATK × 3.0 倍率，需能量满（≥120），释放后能量重置为0"""
         from .damage import calculate_damage, apply_damage
 
-        if caster.current_energy < self.ULT_COST:
+        if not caster.is_energy_full():
             return []
 
         eff_mult = self._effective_multiplier(skill)
         results = []
+        attacker_is_player = not caster.is_enemy
         for target in targets:
             result = calculate_damage(
                 caster, target,
                 skill_multiplier=eff_mult,
                 damage_type=skill.damage_type,
                 damage_source=DamageSource.ULT,
+                attacker_is_player=attacker_is_player,
             )
             apply_damage(caster, target, result)
             results.append((target, result))
 
-        caster.current_energy = 0.0
-        # 触发大招被动
+        caster.energy = 0.0
         self._trigger_passives(caster, SkillType.ULT)
         return results
 
@@ -153,28 +157,84 @@ class SkillExecutor:
         if skill.type == SkillType.BASIC:
             return True
         elif skill.type == SkillType.SPECIAL:
-            return caster.current_energy >= self.SPECIAL_COST
+            return True
         elif skill.type == SkillType.ULT:
-            return caster.current_energy >= self.ULT_COST
+            return caster.is_energy_full()
         return False
 
-    def select_best_skill(self, caster: Character) -> Optional[Skill]:
+    def select_best_skill(self, caster: Character, battle_state=None) -> Optional[Skill]:
         """
-        根据当前能量选择最优技能：
-        - 大招优先（能量 ≥ 3）
-        - 战技次之（能量 ≥ 1）
-        - 普攻兜底
+        根据当前能量和战绩点选择最优技能：
+        - 大招优先（能量满）
+        - 战技次之（战绩点足够）
+        - 普攻最后
         """
         for skill in caster.skills:
             if skill.type == SkillType.ULT and self.can_use_skill(skill, caster):
                 return skill
-        for skill in caster.skills:
-            if skill.type == SkillType.SPECIAL and self.can_use_skill(skill, caster):
-                return skill
+
+        if battle_state is not None and not caster.is_enemy:
+            bp = battle_state.shared_battle_points
+            if bp >= 1:
+                for skill in caster.skills:
+                    if skill.type == SkillType.SPECIAL:
+                        return skill
+
         for skill in caster.skills:
             if skill.type == SkillType.BASIC:
                 return skill
+
+        for skill in caster.skills:
+            if skill.type == SkillType.SPECIAL:
+                return skill
         return None
+
+
+def select_player_skill(caster: Character, battle_state=None) -> Optional[Skill]:
+    """
+    玩家角色技能选择逻辑：
+    - 大招优先（能量满）
+    - 战技次之（战绩点足够）
+    - 普攻最后
+    """
+    for skill in caster.skills:
+        if skill.type == SkillType.ULT and caster.is_energy_full():
+            return skill
+
+    if battle_state is not None:
+        bp = battle_state.shared_battle_points
+        if bp >= 1:
+            for skill in caster.skills:
+                if skill.type == SkillType.SPECIAL:
+                    return skill
+
+    for skill in caster.skills:
+        if skill.type == SkillType.BASIC:
+            return skill
+
+    for skill in caster.skills:
+        if skill.type == SkillType.SPECIAL:
+            return skill
+    return None
+
+
+def select_enemy_skill(caster: Character) -> Optional[Skill]:
+    """
+    敌人技能选择逻辑：
+    - 敌人固定使用普攻
+    - 确保敌人总是能执行行动
+    """
+    for skill in caster.skills:
+        if skill.type == SkillType.BASIC:
+            return skill
+
+    for skill in caster.skills:
+        if skill.type == SkillType.SPECIAL:
+            return skill
+
+    if caster.skills:
+        return caster.skills[0]
+    return None
 
 
 def build_skills_from_json(data: list[dict]) -> dict[str, list[Skill]]:
@@ -191,6 +251,10 @@ def build_skills_from_json(data: list[dict]) -> dict[str, list[Skill]]:
                 multiplier=float(s["multiplier"]),
                 damage_type=Element[s["damage_type"]],
                 description=s.get("description", ""),
+                energy_gain=float(s.get("energy_gain", 10.0)),
+                battle_points_gain=int(s.get("battle_points_gain", 0)),
+                hit_energy_gain=int(s.get("hit_energy_gain", 10)),
+                break_power=float(s.get("break_power", 0.0)),
             ))
         result[char_name] = skills
     return result
@@ -208,6 +272,10 @@ def assign_default_skills(char: Character, skills_data: list[dict]) -> None:
                     multiplier=float(s["multiplier"]),
                     damage_type=Element[s["damage_type"]],
                     description=s.get("description", ""),
+                    energy_gain=float(s.get("energy_gain", 10.0)),
+                    battle_points_gain=int(s.get("battle_points_gain", 0)),
+                    hit_energy_gain=int(s.get("hit_energy_gain", 10)),
+                    break_power=float(s.get("break_power", 0.0)),
                 ))
             return
     # Fallback: 添加默认普攻
@@ -217,6 +285,10 @@ def assign_default_skills(char: Character, skills_data: list[dict]) -> None:
         cost=0.0,
         multiplier=1.0,
         damage_type=char.element,
+        energy_gain=20.0,
+        battle_points_gain=1,
+        hit_energy_gain=10,
+        break_power=10.0,
     ))
 
 

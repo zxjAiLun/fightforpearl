@@ -6,12 +6,11 @@ from src.game.skill import SkillExecutor, assign_default_skills, assign_default_
 import json
 
 
-# 加载真实技能数据
 def _load_skills():
     import os
-    base = os.path.dirname(os.path.dirname(__file__))  # fightforpearl/
+    base = os.path.dirname(os.path.dirname(__file__))
     path = os.path.join(base, "data", "skills.json")
-    with open(path) as f:
+    with open(path, encoding="utf-8") as f:
         return json.load(f)
 
 
@@ -35,7 +34,7 @@ class TestSkillExecutor:
         enemy = _char_with_skills("丹恒")
         executor = SkillExecutor()
 
-        skill = char.skills[0]  # BASIC
+        skill = char.skills[0]
         results = executor.execute(skill, char, [enemy])
         assert len(results) == 1
         target, result = results[0]
@@ -59,64 +58,56 @@ class TestSkillExecutor:
         ult_skill = [s for s in char.skills if s.type == SkillType.ULT][0]
         assert ult_skill.multiplier == 3.0
 
-    def test_energy_cap(self):
-        """能量上限为 3"""
+    def test_energy_limit(self):
+        """能量上限为 120"""
         char = create_character_from_preset("星")
-        char.current_energy = 5.0
-        char.current_energy = min(SkillExecutor.MAX_ENERGY, char.current_energy)
-        assert char.current_energy == 3.0
+        assert char.energy_limit == 120
 
-    def test_energy_refill_per_turn(self):
-        """每回合回复 1 点能量"""
+    def test_battle_points_limit(self):
+        """战绩点上限为 5"""
         char = create_character_from_preset("星")
-        char.current_energy = 0.0
-        char.current_energy = min(SkillExecutor.MAX_ENERGY, char.current_energy + 1.0)
-        assert char.current_energy == 1.0
+        assert char.battle_points_limit == 5
 
-    def test_can_use_skill(self):
-        """能量不足时不能使用战技"""
+    def test_can_use_special_always(self):
+        """战技可以随时使用（不消耗能量）"""
         char = _char_with_skills("星")
-        char.current_energy = 0.0
+        char.energy = 0
         special = [s for s in char.skills if s.type == SkillType.SPECIAL][0]
-        assert SkillExecutor().can_use_skill(special, char) is False
+        assert SkillExecutor().can_use_skill(special, char) is True
 
-    def test_skill_cost_correct(self):
-        """技能消耗正确"""
+    def test_can_use_basic_always(self):
+        """普攻可以随时使用"""
         char = _char_with_skills("星")
         basic = [s for s in char.skills if s.type == SkillType.BASIC][0]
-        special = [s for s in char.skills if s.type == SkillType.SPECIAL][0]
-        ult = [s for s in char.skills if s.type == SkillType.ULT][0]
-        assert basic.cost == 0.0
-        assert special.cost == 1.0
-        assert ult.cost == 3.0
+        assert SkillExecutor().can_use_skill(basic, char) is True
 
     def test_ult_requires_full_energy(self):
-        """大招需要 3 点能量"""
+        """大招需要能量满（120）"""
         char = _char_with_skills("星")
-        char.current_energy = 2.0
+        char.energy = 119
         ult = [s for s in char.skills if s.type == SkillType.ULT][0]
         assert SkillExecutor().can_use_skill(ult, char) is False
+
+    def test_ult_can_use_when_full(self):
+        """能量满时可以使用大招"""
+        char = _char_with_skills("星")
+        char.energy = 120
+        ult = [s for s in char.skills if s.type == SkillType.ULT][0]
+        assert SkillExecutor().can_use_skill(ult, char) is True
 
     def test_select_best_skill_full_energy(self):
         """满能量时选择大招"""
         char = _char_with_skills("星")
-        char.current_energy = 3.0
+        char.energy = 120
         skill = SkillExecutor().select_best_skill(char)
         assert skill.type == SkillType.ULT
 
     def test_select_best_skill_no_energy(self):
         """无能量时选择普攻"""
         char = _char_with_skills("星")
-        char.current_energy = 0.0
+        char.energy = 0
         skill = SkillExecutor().select_best_skill(char)
         assert skill.type == SkillType.BASIC
-
-    def test_select_best_skill_one_energy(self):
-        """1点能量时选择战技"""
-        char = _char_with_skills("星")
-        char.current_energy = 1.0
-        skill = SkillExecutor().select_best_skill(char)
-        assert skill.type == SkillType.SPECIAL
 
     def test_special_damage_higher_than_basic(self):
         """战技伤害应高于普攻（比较基础伤害，不受暴击影响）"""
@@ -127,17 +118,13 @@ class TestSkillExecutor:
         basic = [s for s in char.skills if s.type == SkillType.BASIC][0]
         special = [s for s in char.skills if s.type == SkillType.SPECIAL][0]
 
-        char.current_energy = 1.0
         basic_results = executor.execute(basic, char, [enemy])
         _, basic_result = basic_results[0]
 
         char2 = _char_with_skills("姬子")
-        char2.current_energy = 1.0
         special_results = executor.execute(special, char2, [enemy])
         _, special_result = special_results[0]
 
-        # 比较 base_damage（ATK × multiplier），不受暴击随机性影响
-        # 战技 1.5x vs 普攻 1.0x
         assert special_result.base_damage > basic_result.base_damage
 
     def test_ult_damage_higher_than_special(self):
@@ -146,53 +133,87 @@ class TestSkillExecutor:
         enemy = _char_with_skills("丹恒")
         executor = SkillExecutor()
 
-        char.current_energy = 3.0
+        char.energy = 120
         ult = [s for s in char.skills if s.type == SkillType.ULT][0]
         special = [s for s in char.skills if s.type == SkillType.SPECIAL][0]
 
-        char.current_energy = 3.0
         ult_results = executor.execute(ult, char, [enemy])
         _, ult_result = ult_results[0]
 
         char2 = _char_with_skills("姬子")
-        char2.current_energy = 1.0
         special_results = executor.execute(special, char2, [enemy])
         _, special_result = special_results[0]
 
-        # 比较 base_damage，大招 3.0x vs 战技 1.5x
         assert ult_result.base_damage > special_result.base_damage
-
-    def test_energy_deduct_special(self):
-        """使用战技后能量 -1"""
-        char = _char_with_skills("星")
-        char.current_energy = 1.0
-        special = [s for s in char.skills if s.type == SkillType.SPECIAL][0]
-        enemy = _char_with_skills("丹恒")
-        SkillExecutor().execute(special, char, [enemy])
-        assert char.current_energy == 0.0
 
     def test_energy_deduct_ult(self):
         """使用大往后能量归零"""
         char = _char_with_skills("星")
-        char.current_energy = 3.0
+        char.energy = 120
         ult = [s for s in char.skills if s.type == SkillType.ULT][0]
         enemy = _char_with_skills("丹恒")
         SkillExecutor().execute(ult, char, [enemy])
-        assert char.current_energy == 0.0
+        assert char.energy == 0.0
+
+    def test_basic_energy_gain(self):
+        """使用普攻后能量 +20"""
+        char = _char_with_skills("星")
+        char.energy = 0
+        basic = [s for s in char.skills if s.type == SkillType.BASIC][0]
+        enemy = _char_with_skills("丹恒")
+        SkillExecutor().execute(basic, char, [enemy])
+        assert char.energy == 20.0
+
+    def test_special_energy_gain(self):
+        """使用战技后能量 +30"""
+        char = _char_with_skills("星")
+        char.energy = 0
+        special = [s for s in char.skills if s.type == SkillType.SPECIAL][0]
+        enemy = _char_with_skills("丹恒")
+        SkillExecutor().execute(special, char, [enemy])
+        assert char.energy == 30.0
+
+    def test_energy_cap_at_limit(self):
+        """能量不能超过上限"""
+        char = _char_with_skills("星")
+        char.energy = 115
+        basic = [s for s in char.skills if s.type == SkillType.BASIC][0]
+        enemy = _char_with_skills("丹恒")
+        SkillExecutor().execute(basic, char, [enemy])
+        assert char.energy == 120
+
+    def test_battle_points_gain(self):
+        """使用普攻后战绩点 +1（团队共享）"""
+        from src.game.models import BattleState
+        char = _char_with_skills("星")
+        basic = [s for s in char.skills if s.type == SkillType.BASIC][0]
+        enemy = _char_with_skills("丹恒")
+        state = BattleState(player_team=[char], enemy_team=[enemy])
+        state.shared_battle_points = 3
+        SkillExecutor().execute(basic, char, [enemy], state)
+        assert state.shared_battle_points == 4
+
+    def test_battle_points_cap_at_limit(self):
+        """战绩点不能超过上限（团队共享）"""
+        from src.game.models import BattleState
+        char = _char_with_skills("星")
+        basic = [s for s in char.skills if s.type == SkillType.BASIC][0]
+        enemy = _char_with_skills("丹恒")
+        state = BattleState(player_team=[char], enemy_team=[enemy])
+        state.shared_battle_points = 5
+        SkillExecutor().execute(basic, char, [enemy], state)
+        assert state.shared_battle_points == 5
 
 
 class TestPassive:
     def test_passive_trigger_on_skill(self):
         """使用战技时触发战技增伤被动"""
         char = _char_with_skills("星")
-        char.current_energy = 1.0
         special = [s for s in char.skills if s.type == SkillType.SPECIAL][0]
         enemy = _char_with_skills("丹恒")
 
-        # 触发战技
         SkillExecutor().execute(special, char, [enemy])
 
-        # 战技增伤被动应该被触发
         passive_names = [e.name for e in char.effects]
         assert "战技·增伤" in passive_names
 
@@ -205,26 +226,25 @@ class TestPassive:
     def test_passive_atk_increase(self):
         """大招触发后攻击力应增加"""
         char = _char_with_skills("星")
-        char.current_energy = 3.0
+        char.energy = 120
         ult = [s for s in char.skills if s.type == SkillType.ULT][0]
         enemy = _char_with_skills("丹恒")
 
         initial_atk = char.stat.total_atk()
         SkillExecutor().execute(ult, char, [enemy])
 
-        # 大招加攻被动触发
         passive_names = [e.name for e in char.effects]
         assert "大招·加攻" in passive_names
 
 
 class TestSkillEnergyIntegration:
     def test_energy_progression_over_turns(self):
-        """连续3回合能量累计正确"""
+        """连续多回合能量累计正确"""
         char = create_character_from_preset("星")
-        char.current_energy = 0.0
-        for _ in range(3):
-            char.current_energy = min(SkillExecutor.MAX_ENERGY, char.current_energy + 1.0)
-        assert char.current_energy == 3.0
+        char.energy = 0.0
+        for _ in range(4):
+            char.add_energy(30.0)
+        assert char.energy == 120.0
 
     def test_full_battle_with_energy(self):
         """BattleEngine 中能量积攒流程"""
@@ -236,6 +256,5 @@ class TestSkillEnergyIntegration:
         state = BattleState(player_team=[player], enemy_team=[enemy])
         engine = BattleEngine(state)
 
-        # 验证角色有技能
         assert len(player.skills) == 3
         assert len(enemy.skills) == 3
