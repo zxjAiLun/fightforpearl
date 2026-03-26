@@ -74,8 +74,14 @@ class SkillExecutor:
         targets: list[Character],
         battle_state: 'BattleState' = None,
     ) -> list[tuple[Character, 'DamageResult']]:
-        """战技：ATK × 1.5 倍率，回复能量"""
+        """战技：ATK × 1.5 倍率，消耗战绩点，回复能量"""
         from .damage import calculate_damage, apply_damage
+
+        # 战技消耗战绩点（玩家角色）
+        if not caster.is_enemy and battle_state is not None:
+            if not battle_state.use_shared_battle_points(1):
+                # 战绩点不足，战技无法使用
+                return []
 
         eff_mult = self._effective_multiplier(skill)
         results = []

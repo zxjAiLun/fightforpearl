@@ -24,6 +24,7 @@ class SkillType(Enum):
     BASIC = auto()           # 普攻
     SPECIAL = auto()         # 战技
     ULT = auto()            # 大招
+    FOLLOW_UP = auto()       # 追击
     FALLING_PASSIVE = auto() # 陷入（倒下触发）
     ABILITY_PASSIVE = auto() # 能力（被动）
 
@@ -56,6 +57,11 @@ class FollowUpRule:
     multiplier: float = 0.5         # 追击倍率（相对于普攻）
     damage_type: Element = Element.PHYSICAL
     description: str = ""
+
+    def check_trigger(self, caster: 'Character') -> bool:
+        """检查追击是否触发（基于概率）"""
+        import random
+        return random.random() < self.chance
 
 
 class BreakEffectType(Enum):

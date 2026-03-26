@@ -10,9 +10,9 @@ from .models import (
 )
 from .skill import SkillExecutor
 from .damage import calculate_damage, apply_damage, DamageSource, DamageResult
-from .config.battle import FIRST_ROUND_AV, SUBSEQUENT_AV
+from .config.battle import FIRST_ROUND_AV, SUBSEQUENT_AV, AV_BASE
 
-ACTION_COST = 10000
+ACTION_COST = AV_BASE  # 行动值基准 = 10000
 
 
 @dataclass
@@ -544,7 +544,7 @@ class BattleEngine:
                 if next_time > round_end_time:
                     break
                 
-                actor = max(alive, key=lambda c: c.action_value)
+                actor = min(alive, key=lambda c: c.action_value)  # 行动值最小的先行动
                 self._process_action(actor, alive, turn_counter)
                 actor.action_value += ACTION_COST / actor.stat.total_spd()
             
