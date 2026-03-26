@@ -552,6 +552,87 @@ class StatDetailPanel:
     def hide(self) -> None:
         self.visible = False
         self.char_panel = None
+
+
+class SkillInfoPanel:
+    """显示当前行动角色的技能信息面板"""
+    def __init__(self, x: int, y: int, width: int, height: int):
+        self.rect = pygame.Rect(x, y, width, height)
+        self.visible = False
+        self.current_character = None
+        self.battle_state = None
+        
+    def set_character(self, char, battle_state=None) -> None:
+        self.current_character = char
+        self.battle_state = battle_state
+        self.visible = char is not None
+        
+    def hide(self) -> None:
+        self.visible = False
+        self.current_character = None
+        
+    def draw(self, screen: pygame.Surface, style: GUIStyle) -> None:
+        if not self.visible or not self.current_character:
+            return
+            
+        char = self.current_character
+        
+        # 半透明背景
+        overlay = pygame.Surface((self.rect.width, self.rect.height), pygame.SRCALPHA)
+        overlay.fill((20, 20, 30, 230))
+        screen.blit(overlay, (self.rect.x, self.rect.y))
+        
+        pygame.draw.rect(screen, CYAN, self.rect, 1, border_radius=8)
+        
+        x = self.rect.x + 15
+        y = self.rect.y + 15
+        
+        # 标题
+        title = style.font_large.render(f"{char.name} 的技能", True, CYAN)
+        screen.blit(title, (x, y))
+        y += 35
+        
+        # 显示能量和战绩点状态
+        energy_text = f"能量: {int(char.energy)}/{char.energy_limit}"
+        if hasattr(char, 'battle_points') and self.battle_state:
+            bp = self.battle_state.shared_battle_points
+            bp_limit = self.battle_state.shared_battle_points_limit
+            energy_text += f"  |  战绩点: {bp}/{bp_limit}"
+        energy_surface = style.font.render(energy_text, True, YELLOW)
+        screen.blit(energy_surface, (x, y))
+        y += 30
+        
+        # 技能列表
+        if hasattr(char, 'skills') and char.skills:
+            for skill in char.skills:
+                skill_type = skill.type.name
+                
+                # 检查技能是否可用
+                can_use = True
+                cost_info = ""
+                
+                if skill.type.name == "SPECIAL":
+                    if self.battle_state and self.battle_state.shared_battle_points < 1:
+                        can_use = False
+                        cost_info = " (战绩点不足)"
+                    else:
+                        cost_info = " (消耗1战绩点)"
+                elif skill.type.name == "ULT":
+                    if char.energy < char.energy_limit:
+                        can_use = False
+                        cost_info = " (能量不足)"
+                
+                color = GREEN if can_use else GRAY
+                skill_text = f"• {skill.name}"
+                if cost_info:
+                    skill_text += cost_info
+                    
+                skill_surface = style.font.render(skill_text, True, color)
+                screen.blit(skill_surface, (x, y))
+                y += 25
+        else:
+            no_skill = style.font.render("无可用技能", True, GRAY)
+            screen.blit(no_skill, (x, y))
         self.battle_state = None
         
     def draw(self, screen: pygame.Surface, style: GUIStyle) -> None:
@@ -626,6 +707,9 @@ class BattleGUI:
         self.battle_engine = None
         self.battle_state = None
         
+        # 技能信息面板
+        self.skill_info_panel = SkillInfoPanel(SCREEN_WIDTH - 220, 200, 200, 250)
+        
         self._init_panels()
         
     def _init_panels(self) -> None:
@@ -662,6 +746,12 @@ class BattleGUI:
         shared_battle_points_limit = state.shared_battle_points_limit
 
         self.action_bar.update_entries(state.player_team, state.enemy_team, self.current_actor, self.current_time, self.round_end_time)
+        
+        # 更新技能信息面板（显示当前行动的角色）
+        if self.current_actor and not self.current_actor.is_enemy:
+            self.skill_info_panel.set_character(self.current_actor, self.battle_state)
+        else:
+            self.skill_info_panel.hide()
 
     def add_log(self, message: str) -> None:
         self.log_panel.add_message(message)
@@ -804,6 +894,7 @@ class BattleGUI:
         self.log_panel.draw(self.screen, self.style)
         self.stat_panel.draw(self.screen, self.style)
         self.enemy_detail_panel.draw(self.screen, self.style, self.battle_state)
+        self.skill_info_panel.draw(self.screen, self.style)
         
         self.play_button.draw(self.screen, self.style)
         self.step_button.draw(self.screen, self.style)
