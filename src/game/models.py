@@ -647,6 +647,7 @@ class Effect:
     """BUFF/DEBUFF 效果"""
     name: str
     turns_remaining: int = 0
+    effect_type: str = "buff"  # "buff" 或 "debuff"
     atk_pct_bonus: float = 0.0
     dmg_pct_bonus: float = 0.0
     crit_rate_bonus: float = 0.0
@@ -655,6 +656,28 @@ class Effect:
     heal_on_hit: float = 0.0
     flat_damage: int = 0
     vuln_pct: float = 0.0
+
+    def is_buff(self) -> bool:
+        """是否为增益效果"""
+        return self.effect_type == "buff"
+    
+    def is_debuff(self) -> bool:
+        """是否为减益效果"""
+        return self.effect_type == "debuff"
+    
+    def get_icon_color(self) -> tuple:
+        """获取图标颜色 (R, G, B)"""
+        if self.is_buff():
+            return (100, 200, 100)  # 绿色
+        else:
+            return (200, 100, 100)  # 红色
+    
+    def get_abbreviation(self) -> str:
+        """获取效果缩写（用于图标显示）"""
+        # 取名字的前两个字符
+        if len(self.name) >= 2:
+            return self.name[:2]
+        return self.name[:1]
 
     def apply_to(self, char: Character) -> None:
         char.stat.atk_pct += self.atk_pct_bonus

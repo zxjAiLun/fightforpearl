@@ -129,6 +129,59 @@ class SpeedSlider:
         screen.blit(label, (self.rect.x, self.rect.y - 25))
 
 
+def render_effect_icons(effects: list, screen: pygame.Surface, style: GUIStyle, x: int, y: int, max_display: int = 4) -> int:
+    """
+    渲染效果图标行
+    
+    Args:
+        effects: Effect对象列表
+        screen: pygame屏幕
+        style: GUI样式
+        x, y: 起始位置
+        max_display: 最大显示数量
+    
+    Returns:
+        实际使用的y坐标（用于后续渲染）
+    """
+    if not effects:
+        return y
+    
+    # 限制显示数量
+    display_effects = effects[:max_display]
+    overflow = len(effects) - max_display
+    
+    icon_size = 24
+    icon_y = y
+    
+    for i, effect in enumerate(display_effects):
+        icon_x = x + i * (icon_size + 4)
+        
+        # 绘制图标背景
+        color = effect.get_icon_color() if hasattr(effect, 'get_icon_color') else (100, 100, 100)
+        icon_rect = pygame.Rect(icon_x, icon_y, icon_size, icon_size)
+        pygame.draw.rect(screen, color, icon_rect, border_radius=4)
+        
+        # 绘制缩写文字
+        abbrev = effect.get_abbreviation() if hasattr(effect, 'get_abbreviation') else effect.name[:2]
+        text = style.font_small.render(abbrev, True, WHITE)
+        text_rect = text.get_rect(center=icon_rect.center)
+        screen.blit(text, text_rect)
+        
+        # 绘制回合数
+        turns = effect.turns_remaining
+        turns_text = style.font_small.render(f"{turns}", True, WHITE)
+        turns_rect = turns_text.get_rect(bottomright=icon_rect.bottomright)
+        screen.blit(turns_text, turns_rect)
+    
+    # 如果有溢出，显示"+N"
+    if overflow > 0:
+        overflow_x = x + max_display * (icon_size + 4)
+        overflow_text = style.font_small.render(f"+{overflow}", True, YELLOW)
+        screen.blit(overflow_text, (overflow_x, icon_y))
+    
+    return y + icon_size + 4
+
+
 def render_character_box_contents(panel, screen: pygame.Surface, style: GUIStyle, x: int, y: int) -> None:
     name_text = style.font_large.render(panel.name, True, panel.color)
     screen.blit(name_text, (x, y))
@@ -155,8 +208,9 @@ def render_character_box_contents(panel, screen: pygame.Surface, style: GUIStyle
     screen.blit(spd_text, (x, y))
     y += 24
 
-    # av_text = style.font.render(f"AV: {panel.action_value:.2f}", True, PURPLE)
-    # screen.blit(av_text, (x, y))
+    # 渲染Buff图标
+    if hasattr(panel, 'effects') and panel.effects:
+        y = render_effect_icons(panel.effects, screen, style, x, y)
 
 
 def render_enemy_box_contents(panel, screen: pygame.Surface, style: GUIStyle, x: int, y: int) -> None:
@@ -179,7 +233,11 @@ def render_enemy_box_contents(panel, screen: pygame.Surface, style: GUIStyle, x:
     screen.blit(weakness_text, (x, y))
     y += 28
 
-    if panel.recent_buffs:
+    # 渲染Buff/Debuff图标（使用新的Effect图标系统）
+    if hasattr(panel, 'effects') and panel.effects:
+        y = render_effect_icons(panel.effects, screen, style, x, y)
+    elif panel.recent_buffs:
+        # 兼容旧的字符串列表方式
         buff_label = style.font.render("Buffs:", True, GRAY)
         screen.blit(buff_label, (x, y))
         x += 70
@@ -208,6 +266,7 @@ class CharacterPanel:
         self.is_selected = False
         self.weakness = "PHYSICAL"
         self.recent_buffs = []
+        self.effects = []  # Effect对象列表，用于图标渲染
         self.char_ref = None
 
     def set_character(self, char) -> None:
@@ -224,7 +283,9 @@ class CharacterPanel:
         self.max_toughness = 100
         self.color = ELEMENT_COLORS.get(self.element, WHITE)
         self.weakness = char.element.name
-        self.recent_buffs = list(char.effects)[-2:] if hasattr(char, 'effects') and char.effects else []
+        # 复制Effect对象列表
+        self.effects = list(char.effects) if hasattr(char, 'effects') and char.effects else []
+        self.recent_buffs = [str(e.name) for e in self.effects[-2:]]  # 兼容旧代码
 
     def handle_click(self, pos) -> bool:
         return self.rect.collidepoint(pos)
