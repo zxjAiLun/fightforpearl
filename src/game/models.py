@@ -87,10 +87,9 @@ class TriggerCondition(Enum):
 
 class FollowUpTrigger:
     """
-    追加攻击触发器
+    追加攻击触发器配置
     
-    与FollowUpRule不同，FollowUpTrigger是独立的追加攻击系统，
-    有自己的触发条件和执行逻辑。
+    存储追加攻击的配置信息，条件检查通过事件系统处理。
     """
     
     def __init__(
@@ -105,6 +104,8 @@ class FollowUpTrigger:
         damage_type: Element = Element.PHYSICAL,
         target_scope: str = "single",  # "single" | "aoe" | "trigger"
         description: str = "",
+        # 事件订阅配置
+        subscribe_events: list = None,  # 要订阅的事件类型列表
     ):
         self.name = name
         self.condition = condition
@@ -116,6 +117,7 @@ class FollowUpTrigger:
         self.damage_type = damage_type
         self.target_scope = target_scope  # single=攻击触发目标, aoe=攻击所有敌人, trigger=只攻击触发目标
         self.description = description
+        self.subscribe_events = subscribe_events or []  # 事件订阅列表
     
     def check_condition(
         self,
@@ -124,7 +126,7 @@ class FollowUpTrigger:
         all_opponents: list['Character'] = None,
     ) -> tuple[bool, list['Character']]:
         """
-        检查触发条件是否满足
+        检查触发条件是否满足（用于事件系统回调）
         
         Returns:
             (是否触发, 追加攻击目标列表)
@@ -142,7 +144,6 @@ class FollowUpTrigger:
             targets = [trigger_target]
             
         elif self.condition == TriggerCondition.TARGET_HP_BELOW:
-            # 目标HP低于阈值
             threshold = trigger_target.stat.total_max_hp() * self.condition_value
             if trigger_target.current_hp <= threshold:
                 targets = [trigger_target]
@@ -153,7 +154,6 @@ class FollowUpTrigger:
                 targets = [trigger_target]
                 
         elif self.condition == TriggerCondition.TARGET_IS_WEAKENED:
-            # 目标处于弱化状态（有负面效果）
             if any(e.is_debuff() for e in trigger_target.effects):
                 targets = [trigger_target]
                 
@@ -168,15 +168,12 @@ class FollowUpTrigger:
                 targets = [trigger_target]
                 
         elif self.condition == TriggerCondition.AFTER_BASIC:
-            if self.trigger_skill_type == SkillType.BASIC:
-                targets = [trigger_target]
+            targets = [trigger_target]
                 
         elif self.condition == TriggerCondition.AFTER_SPECIAL:
-            if self.trigger_skill_type == SkillType.SPECIAL:
-                targets = [trigger_target]
+            targets = [trigger_target]
                 
         elif self.condition == TriggerCondition.KILL:
-            # 击杀后触发，攻击所有敌人
             if all_opponents:
                 targets = all_opponents
                 
@@ -192,9 +189,39 @@ class FollowUpTrigger:
         elif self.target_scope == "trigger":
             return True, [trigger_target]
         else:
-            return True, targets[:1]  # 默认只打触发目标
+            return True, targets[:1]
         
         return False, []
+    
+    def get_subscribe_events(self) -> list:
+        """
+        获取应该订阅的事件类型列表
+        
+        根据trigger_skill_type和condition推断要订阅的事件。
+        """
+        events = []
+        
+        # 根据触发技能类型订阅
+        if self.trigger_skill_type == SkillType.BASIC:
+            events.append("BASIC_EXECUTED")
+        elif self.trigger_skill_type == SkillType.SPECIAL:
+            events.append("SPECIAL_EXECUTED")
+        elif self.trigger_skill_type == SkillType.ULT:
+            events.append("ULT_EXECUTED")
+        
+        # 根据条件添加额外事件
+        if self.condition == TriggerCondition.KILL:
+            events.append("KILL_OCCURRED")
+        elif self.condition == TriggerCondition.TARGET_HP_BELOW:
+            events.append("DAMAGE_DEALT")
+        elif self.condition == TriggerCondition.TARGET_IS_WEAKENED:
+            events.append("DAMAGE_DEALT")
+        elif self.condition == TriggerCondition.AFTER_BASIC:
+            events.append("AFTER_BASIC")
+        elif self.condition == TriggerCondition.AFTER_SPECIAL:
+            events.append("AFTER_SPECIAL")
+        
+        return events
     
     def __repr__(self) -> str:
         return f"FollowUpTrigger({self.name}, {self.condition.name}, chance={self.chance})"

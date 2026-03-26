@@ -11,6 +11,7 @@ from .models import (
 from .skill import SkillExecutor
 from .damage import calculate_damage, apply_damage, DamageSource, DamageResult
 from .config.battle import FIRST_ROUND_AV, SUBSEQUENT_AV, AV_BASE
+from .event_bus import EventBus, EventType, BattleEvent as BusBattleEvent
 
 ACTION_COST = AV_BASE  # 行动值基准 = 10000
 
@@ -62,7 +63,7 @@ class BattleEngine:
     DAMAGE_ONLY = "damage_only"
     FULL_DETAIL = "full_detail"
 
-    def __init__(self, state: BattleState, skills_data=None, log_level: str = DAMAGE_ONLY):
+    def __init__(self, state: BattleState, skills_data=None, log_level: str = "damage_only"):
         self.state = state
         self.events: list[BattleEvent] = []
         self._log_callback: Callable[[BattleEvent], None] | None = None
@@ -71,12 +72,20 @@ class BattleEngine:
         self._total_action_value = 0.0
         self._current_turn = 1
         self._round_marker: RoundMarker | None = None
+        
+        # 事件总线（发布-订阅模式）
+        self._event_bus = EventBus()
+        
+        # 关联角色和战斗状态的引用（用于事件总线获取对手列表）
+        for char in state.player_team + state.enemy_team:
+            char._battle_state = state
 
         if skills_data is None:
             skills_data = self._load_skills_data()
         self._skills_data = skills_data
         self._assign_skills_and_passives_to_teams()
         self._create_round_marker()
+        self._register_follow_up_triggers()
 
     def _load_skills_data(self) -> list:
         try:
@@ -97,6 +106,122 @@ class BattleEngine:
                 assign_default_skills(char, self._skills_data)
             if not char.passives:
                 assign_default_passives(char)
+
+    def _register_follow_up_triggers(self):
+        """
+        注册所有角色的追加攻击触发器到事件总线
+        
+        这是发布-订阅模式的核心：
+        每个带有追加攻击触发器的角色都会订阅它关心的事件。
+        当战斗过程中这些事件发生时，事件总线会自动通知触发器。
+        """
+        for char in self.state.player_team + self.state.enemy_team:
+            for trigger in char.follow_up_triggers:
+                # 获取触发器应该订阅的事件类型
+                event_names = trigger.get_subscribe_events()
+                for event_name in event_names:
+                    try:
+                        event_type = EventType[event_name]
+                        self._event_bus.subscribe(trigger, [event_type])
+                    except KeyError:
+                        pass  # 忽略未知事件类型
+
+    def _publish_event(
+        self,
+        event_type: EventType,
+        caster: Character,
+        target: Character,
+        turn: int,
+        extra_data: dict = None,
+    ) -> list[tuple]:
+        """
+        发布事件到事件总线
+        
+        Returns:
+            触发成功的触发器列表
+        """
+        event = BusBattleEvent(
+            event_type=event_type,
+            caster=caster,
+            target=target,
+            turn=turn,
+            extra_data=extra_data or {},
+        )
+        return self._event_bus.publish(event)
+    
+    def _publish_skill_event(
+        self,
+        caster: Character,
+        skill: Skill,
+        results: list,
+        turn: int,
+    ) -> None:
+        """
+        发布技能执行事件，并处理事件总线触发的追加攻击
+        """
+        # 确定事件类型
+        if skill.type == SkillType.BASIC:
+            event_type = EventType.BASIC_EXECUTED
+        elif skill.type == SkillType.SPECIAL:
+            event_type = EventType.SPECIAL_EXECUTED
+        elif skill.type == SkillType.ULT:
+            event_type = EventType.ULT_EXECUTED
+        else:
+            event_type = EventType.SKILL_EXECUTED
+        
+        # 为每个目标发布事件
+        for target, result in results:
+            # 发布主事件
+            triggered = self._publish_event(event_type, caster, target, turn, {
+                "skill_name": skill.name,
+                "damage": result.final_damage,
+                "is_crit": result.is_crit,
+            })
+            
+            # 处理事件总线触发的追加攻击
+            self._process_triggered_follow_ups(caster, triggered, turn)
+            
+            # 发布伤害事件（用于HP条件检查）
+            self._publish_event(EventType.DAMAGE_DEALT, caster, target, turn, {
+                "skill_name": skill.name,
+                "damage": result.final_damage,
+                "is_crit": result.is_crit,
+            })
+    
+    def _process_triggered_follow_ups(
+        self,
+        caster: Character,
+        triggered: list[tuple],
+        turn: int,
+    ) -> None:
+        """
+        处理事件总线触发的追加攻击
+        """
+        for trigger, targets in triggered:
+            fu_skill = Skill(
+                name=f"追加攻击·{trigger.name}",
+                type=SkillType.FOLLOW_UP,
+                multiplier=trigger.multiplier,
+                damage_type=trigger.damage_type,
+            )
+            
+            for target in targets:
+                result = calculate_damage(
+                    caster, target,
+                    skill_multiplier=fu_skill.multiplier,
+                    damage_type=fu_skill.damage_type,
+                    damage_source=DamageSource.FOLLOW_UP,
+                    attacker_is_player=not caster.is_enemy,
+                )
+                apply_damage(caster, target, result)
+                
+                self._log(BattleEvent(
+                    turn=turn,
+                    actor=caster,
+                    action="FOLLOW_UP_TRIGGER",
+                    detail=f"{caster.name} 触发追加攻击！对 {target.name} 造成 {result.final_damage} 伤害",
+                    damage_result=result,
+                ))
 
     def set_logger(self, cb: Callable[[BattleEvent], None]):
         self._log_callback = cb
@@ -460,64 +585,6 @@ class BattleEngine:
                         damage_result=result,
                     ))
 
-    def _try_follow_up_trigger(
-        self,
-        caster: Character,
-        skill: Skill,
-        primary_targets: list[Character],
-        turn: int,
-    ) -> None:
-        """
-        检查并触发追加攻击触发器
-        追加攻击触发器是独立于FollowUpRule的系统，有自己的触发条件
-        """
-        if not caster.follow_up_triggers:
-            return
-        
-        # 获取所有敌人
-        if caster.is_enemy:
-            opponents = [c for c in self.state.player_team if c.is_alive()]
-        else:
-            opponents = [c for c in self.state.enemy_team if c.is_alive()]
-        
-        for trigger in caster.follow_up_triggers:
-            # 检查触发条件
-            triggered, fu_targets = trigger.check_condition(
-                caster,
-                primary_targets[0] if primary_targets else None,
-                opponents,
-            )
-            
-            if not triggered:
-                continue
-            
-            # 创建追加攻击技能
-            fu_skill = Skill(
-                name=f"追加攻击·{trigger.name}",
-                type=SkillType.FOLLOW_UP,
-                multiplier=trigger.multiplier,
-                damage_type=trigger.damage_type,
-            )
-            
-            # 执行追加攻击
-            for target in fu_targets:
-                result = calculate_damage(
-                    caster, target,
-                    skill_multiplier=fu_skill.multiplier,
-                    damage_type=fu_skill.damage_type,
-                    damage_source=DamageSource.FOLLOW_UP,
-                    attacker_is_player=not caster.is_enemy,
-                )
-                apply_damage(caster, target, result)
-                
-                self._log(BattleEvent(
-                    turn=turn,
-                    actor=caster,
-                    action="FOLLOW_UP_TRIGGER",
-                    detail=f"{caster.name} 触发追加攻击！对 {target.name} 造成 {result.final_damage} 伤害",
-                    damage_result=result,
-                ))
-
     def step_back(self) -> bool:
         """
         回退到上一个行动状态
@@ -687,6 +754,9 @@ class BattleEngine:
         if not results:
             return
         
+        # 发布技能执行事件（用于追加攻击触发器）
+        self._publish_skill_event(actor, skill, results, turn_counter)
+        
         self._log_action_event(actor, skill, results)
         
         for target, result in results:
@@ -709,6 +779,9 @@ class BattleEngine:
                         action="KILL",
                         detail=f"{actor.name} 击杀目标，回复能量",
                     ))
+                
+                # 发布击杀事件
+                self._publish_event(EventType.KILL_OCCURRED, actor, target, turn_counter)
             
             target_status = self.state._break_status(target)
             if target_status.break_type == BreakEffectType.ENTANGLE:
@@ -716,9 +789,6 @@ class BattleEngine:
                 target.entangle_hit_stacks = target_status.entangle_hit_stacks
         
         self._try_follow_up(actor, skill, results, turn_counter)
-        
-        # 检查追加攻击触发器
-        self._try_follow_up_trigger(actor, skill, targets, turn_counter)
 
 
 def create_default_character(name: str, element=None) -> Character:

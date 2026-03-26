@@ -320,7 +320,7 @@
         "multiplier": 0.6,
         "damage_type": "ICE",
         "target_scope": "aoe",
-        "description": "普攻后，对生命值<=50%的敌方目标有60%概率触发追加攻击（全体冰属性伤害）"
+        "description": "普攻命中生命值<=50%的敌方目标时，有60%概率触发追加攻击（全体冰属性伤害）"
       }
     ]
   }
