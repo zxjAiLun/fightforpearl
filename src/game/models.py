@@ -431,14 +431,41 @@ class Skill:
     hit_energy_gain: int = 10
     break_power: float = 0.0
 
+    # 弹射（Ricochet）技能专用
+    # 弹射：攻击一个目标后弹射到其他目标，每次弹射伤害递减
+    ricochet_count: int = 0       # 弹射次数（0表示不使用弹射）
+    ricochet_decay: float = 0.8   # 每次弹射伤害衰减率
+
+    # 扩散（Spread）技能专用
+    # 扩散：主目标受全额伤害，其他目标受扩散伤害
+    spread_count: int = 0         # 扩散目标数量（0表示不使用扩散）
+    spread_multiplier: float = 0.5 # 扩散目标伤害倍率
+
     def is_aoe(self) -> bool:
-        return self.target_count != 1
+        """是否AOE技能（多目标）
+        target_count = -1 表示攻击所有目标
+        target_count > 1 表示攻击多个目标
+        """
+        return self.target_count != 1  # -1 或 > 1 都是AOE
+
+    def is_ricochet(self) -> bool:
+        """是否弹射技能"""
+        return self.ricochet_count > 0
+
+    def is_spread(self) -> bool:
+        """是否扩散技能"""
+        return self.spread_count > 0
 
     def get_targets(self, available: list) -> list:
         """从可用目标列表中返回本次技能命中的目标"""
         if self.target_count == -1:
             return available
         return available[: self.target_count]
+
+    def get_spread_targets(self, available: list, primary_target) -> list:
+        """获取扩散目标（排除主目标）"""
+        remaining = [t for t in available if t != primary_target]
+        return remaining[: self.spread_count]
 
     def __str__(self) -> str:
         return f"{self.name}[{self.type.name}]"

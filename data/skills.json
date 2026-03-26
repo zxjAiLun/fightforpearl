@@ -19,7 +19,7 @@
         "cost": 1,
         "multiplier": 1.5,
         "damage_type": "PHYSICAL",
-        "description": "消耗1点能量，造成1.5倍物理伤害",
+        "description": "消耗1点战绩点，造成1.5倍物理伤害",
         "energy_gain": 30.0,
         "battle_points_gain": 0,
         "break_power": 20
@@ -28,12 +28,14 @@
         "name": "终结技·陨星",
         "type": "ULT",
         "cost": 3,
-        "multiplier": 3.0,
+        "multiplier": 2.5,
         "damage_type": "PHYSICAL",
-        "description": "消耗全部能量（≥3），造成3.0倍物理伤害",
+        "description": "消耗全部能量，对所有敌人造成2.5倍物理伤害",
         "energy_gain": 5.0,
         "battle_points_gain": 0,
-        "break_power": 40
+        "break_power": 40,
+        "target_count": -1,
+        "aoe_multiplier": 1.0
       }
     ]
   },
@@ -55,23 +57,27 @@
         "name": "战技·风舞",
         "type": "SPECIAL",
         "cost": 1,
-        "multiplier": 1.5,
+        "multiplier": 1.2,
         "damage_type": "WIND",
-        "description": "消耗1点能量，造成1.5倍风元素伤害",
+        "description": "消耗1点战绩点，造成1.2倍风元素伤害，可弹射2次",
         "energy_gain": 30.0,
         "battle_points_gain": 0,
-        "break_power": 20
+        "break_power": 20,
+        "ricochet_count": 2,
+        "ricochet_decay": 0.75
       },
       {
         "name": "终结技·风暴",
         "type": "ULT",
         "cost": 3,
-        "multiplier": 3.0,
+        "multiplier": 2.0,
         "damage_type": "WIND",
-        "description": "消耗全部能量（≥3），造成3.0倍风元素伤害",
+        "description": "消耗全部能量，对所有敌人造成2.0倍风元素伤害",
         "energy_gain": 5.0,
         "battle_points_gain": 0,
-        "break_power": 40
+        "break_power": 40,
+        "target_count": -1,
+        "aoe_multiplier": 0.8
       }
     ]
   },
@@ -95,7 +101,7 @@
         "cost": 1,
         "multiplier": 1.5,
         "damage_type": "THUNDER",
-        "description": "消耗1点能量，造成1.5倍雷元素伤害",
+        "description": "消耗1点战绩点，造成1.5倍雷元素伤害",
         "energy_gain": 30.0,
         "battle_points_gain": 0,
         "break_power": 20
@@ -106,7 +112,7 @@
         "cost": 3,
         "multiplier": 3.0,
         "damage_type": "THUNDER",
-        "description": "消耗全部能量（≥3），造成3.0倍雷元素伤害",
+        "description": "消耗全部能量，造成3.0倍雷元素伤害",
         "energy_gain": 5.0,
         "battle_points_gain": 0,
         "break_power": 40
@@ -133,21 +139,25 @@
         "cost": 1,
         "multiplier": 1.5,
         "damage_type": "FIRE",
-        "description": "消耗1点能量，造成1.5倍火元素伤害",
+        "description": "消耗1点战绩点，造成1.5倍火元素伤害，额外扩散1个目标",
         "energy_gain": 30.0,
         "battle_points_gain": 0,
-        "break_power": 20
+        "break_power": 20,
+        "spread_count": 1,
+        "spread_multiplier": 0.5
       },
       {
         "name": "终结技·燃星",
         "type": "ULT",
         "cost": 3,
-        "multiplier": 3.0,
+        "multiplier": 2.5,
         "damage_type": "FIRE",
-        "description": "消耗全部能量（≥3），造成3.0倍火元素伤害",
+        "description": "消耗全部能量，对所有敌人造成2.5倍火元素伤害",
         "energy_gain": 5.0,
         "battle_points_gain": 0,
-        "break_power": 40
+        "break_power": 40,
+        "target_count": -1,
+        "aoe_multiplier": 0.9
       }
     ]
   },
@@ -171,7 +181,7 @@
         "cost": 1,
         "multiplier": 1.5,
         "damage_type": "ICE",
-        "description": "消耗1点能量，造成1.5倍冰元素伤害",
+        "description": "消耗1点战绩点，造成1.5倍冰元素伤害",
         "energy_gain": 30.0,
         "battle_points_gain": 0,
         "break_power": 20
@@ -182,7 +192,7 @@
         "cost": 3,
         "multiplier": 3.0,
         "damage_type": "ICE",
-        "description": "消耗全部能量（≥3），造成3.0倍冰元素伤害",
+        "description": "消耗全部能量，造成3.0倍冰元素伤害",
         "energy_gain": 5.0,
         "battle_points_gain": 0,
         "break_power": 40
@@ -207,23 +217,27 @@
         "name": "战技·量子波",
         "type": "SPECIAL",
         "cost": 1,
-        "multiplier": 1.5,
+        "multiplier": 1.0,
         "damage_type": "QUANTUM",
-        "description": "消耗1点能量，造成1.5倍量子伤害",
+        "description": "消耗1点战绩点，造成1.0倍量子伤害，弹射2次（每次衰减25%）",
         "energy_gain": 30.0,
         "battle_points_gain": 0,
-        "break_power": 20
+        "break_power": 20,
+        "ricochet_count": 2,
+        "ricochet_decay": 0.75
       },
       {
         "name": "终结技·矩阵崩解",
         "type": "ULT",
         "cost": 3,
-        "multiplier": 3.0,
+        "multiplier": 2.0,
         "damage_type": "QUANTUM",
-        "description": "消耗全部能量（≥3），造成3.0倍量子伤害",
+        "description": "消耗全部能量，对所有敌人造成2.0倍量子伤害",
         "energy_gain": 5.0,
         "battle_points_gain": 0,
-        "break_power": 40
+        "break_power": 40,
+        "target_count": -1,
+        "aoe_multiplier": 0.8
       }
     ]
   },
@@ -245,23 +259,27 @@
         "name": "战技·虚数冲击",
         "type": "SPECIAL",
         "cost": 1,
-        "multiplier": 1.5,
+        "multiplier": 1.2,
         "damage_type": "IMAGINARY",
-        "description": "消耗1点能量，造成1.5倍虚数伤害",
+        "description": "消耗1点战绩点，造成1.2倍虚数伤害，主目标+扩散2个目标",
         "energy_gain": 30.0,
         "battle_points_gain": 0,
-        "break_power": 20
+        "break_power": 20,
+        "spread_count": 2,
+        "spread_multiplier": 0.4
       },
       {
         "name": "终结技·世界崩解",
         "type": "ULT",
         "cost": 3,
-        "multiplier": 3.0,
+        "multiplier": 2.5,
         "damage_type": "IMAGINARY",
-        "description": "消耗全部能量（≥3），造成3.0倍虚数伤害",
+        "description": "消耗全部能量，对所有敌人造成2.5倍虚数伤害",
         "energy_gain": 5.0,
         "battle_points_gain": 0,
-        "break_power": 40
+        "break_power": 40,
+        "target_count": -1,
+        "aoe_multiplier": 0.85
       }
     ]
   }

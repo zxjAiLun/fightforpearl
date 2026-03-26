@@ -33,10 +33,17 @@ class SkillExecutor:
             return self._execute_ult(skill, caster, targets, battle_state)
         return []
 
-    def _effective_multiplier(self, skill: Skill) -> float:
+    def _effective_multiplier(self, skill: Skill, target_index: int = 0) -> float:
         """计算有效倍率：AOE时应用 aoe_multiplier 折扣"""
         if skill.is_aoe():
+            # AOE技能：对所有目标应用aoe_multiplier折扣
             return skill.multiplier * skill.aoe_multiplier
+        elif skill.is_ricochet():
+            # 弹射技能：每次弹射递减
+            return skill.multiplier * (skill.ricochet_decay ** target_index)
+        elif skill.is_spread() and target_index > 0:
+            # 扩散技能：主目标全额，扩散目标应用spread_multiplier
+            return skill.multiplier * skill.spread_multiplier
         return skill.multiplier
 
     def _execute_basic(
@@ -48,19 +55,29 @@ class SkillExecutor:
     ) -> list[tuple[Character, 'DamageResult']]:
         """普攻：ATK × 1.0 倍率，回复能量和战绩点"""
         from .damage import calculate_damage, apply_damage
-        eff_mult = self._effective_multiplier(skill)
         results = []
         attacker_is_player = not caster.is_enemy
-        for target in targets:
-            result = calculate_damage(
-                caster, target,
-                skill_multiplier=eff_mult,
-                damage_type=skill.damage_type,
-                damage_source=DamageSource.BASIC,
-                attacker_is_player=attacker_is_player,
-            )
-            apply_damage(caster, target, result)
-            results.append((target, result))
+
+        # 处理弹射技能
+        if skill.is_ricochet():
+            results = self._execute_ricochet(skill, caster, targets, battle_state, DamageSource.BASIC)
+        # 处理扩散技能
+        elif skill.is_spread():
+            results = self._execute_spread(skill, caster, targets, battle_state, DamageSource.BASIC)
+        # 普通或AOE技能
+        else:
+            for idx, target in enumerate(targets):
+                eff_mult = self._effective_multiplier(skill, idx)
+                result = calculate_damage(
+                    caster, target,
+                    skill_multiplier=eff_mult,
+                    damage_type=skill.damage_type,
+                    damage_source=DamageSource.BASIC,
+                    attacker_is_player=attacker_is_player,
+                )
+                apply_damage(caster, target, result)
+                results.append((target, result))
+
         caster.add_energy(skill.energy_gain)
         if battle_state is not None and skill.battle_points_gain > 0 and not caster.is_enemy:
             battle_state.add_shared_battle_points(skill.battle_points_gain)
@@ -83,19 +100,28 @@ class SkillExecutor:
                 # 战绩点不足，战技无法使用
                 return []
 
-        eff_mult = self._effective_multiplier(skill)
         results = []
         attacker_is_player = not caster.is_enemy
-        for target in targets:
-            result = calculate_damage(
-                caster, target,
-                skill_multiplier=eff_mult,
-                damage_type=skill.damage_type,
-                damage_source=DamageSource.SPECIAL,
-                attacker_is_player=attacker_is_player,
-            )
-            apply_damage(caster, target, result)
-            results.append((target, result))
+
+        # 处理弹射技能
+        if skill.is_ricochet():
+            results = self._execute_ricochet(skill, caster, targets, battle_state, DamageSource.SPECIAL)
+        # 处理扩散技能
+        elif skill.is_spread():
+            results = self._execute_spread(skill, caster, targets, battle_state, DamageSource.SPECIAL)
+        # 普通或AOE技能
+        else:
+            for idx, target in enumerate(targets):
+                eff_mult = self._effective_multiplier(skill, idx)
+                result = calculate_damage(
+                    caster, target,
+                    skill_multiplier=eff_mult,
+                    damage_type=skill.damage_type,
+                    damage_source=DamageSource.SPECIAL,
+                    attacker_is_player=attacker_is_player,
+                )
+                apply_damage(caster, target, result)
+                results.append((target, result))
 
         caster.add_energy(skill.energy_gain)
         self._trigger_passives(caster, SkillType.SPECIAL)
@@ -114,22 +140,128 @@ class SkillExecutor:
         if not caster.is_energy_full():
             return []
 
-        eff_mult = self._effective_multiplier(skill)
         results = []
         attacker_is_player = not caster.is_enemy
-        for target in targets:
+
+        # 处理弹射技能
+        if skill.is_ricochet():
+            results = self._execute_ricochet(skill, caster, targets, battle_state, DamageSource.ULT)
+        # 处理扩散技能
+        elif skill.is_spread():
+            results = self._execute_spread(skill, caster, targets, battle_state, DamageSource.ULT)
+        # 普通或AOE技能
+        else:
+            for idx, target in enumerate(targets):
+                eff_mult = self._effective_multiplier(skill, idx)
+                result = calculate_damage(
+                    caster, target,
+                    skill_multiplier=eff_mult,
+                    damage_type=skill.damage_type,
+                    damage_source=DamageSource.ULT,
+                    attacker_is_player=attacker_is_player,
+                )
+                apply_damage(caster, target, result)
+                results.append((target, result))
+
+        caster.energy = 0.0
+        self._trigger_passives(caster, SkillType.ULT)
+        return results
+
+    def _execute_ricochet(
+        self,
+        skill: Skill,
+        caster: Character,
+        targets: list[Character],
+        battle_state: 'BattleState' = None,
+        damage_source: 'DamageSource' = DamageSource.SPECIAL,
+    ) -> list[tuple[Character, 'DamageResult']]:
+        """
+        弹射技能执行：攻击一个目标后弹射到其他目标
+        弹射伤害逐次递减（ricochet_decay）
+        """
+        from .damage import calculate_damage, apply_damage
+
+        results = []
+        attacker_is_player = not caster.is_enemy
+
+        if not targets:
+            return results
+
+        # 首先对第一个目标造成伤害（主目标）
+        primary_target = targets[0]
+        eff_mult = self._effective_multiplier(skill, 0)  # 主目标无衰减
+        result = calculate_damage(
+            caster, primary_target,
+            skill_multiplier=eff_mult,
+            damage_type=skill.damage_type,
+            damage_source=damage_source,
+            attacker_is_player=attacker_is_player,
+        )
+        apply_damage(caster, primary_target, result)
+        results.append((primary_target, result))
+
+        # 然后弹射到其他目标
+        bounce_targets = targets[1:skill.ricochet_count] if skill.ricochet_count > 0 else []
+        for i, target in enumerate(bounce_targets):
+            eff_mult = self._effective_multiplier(skill, i + 1)  # 弹射目标有衰减
             result = calculate_damage(
                 caster, target,
                 skill_multiplier=eff_mult,
                 damage_type=skill.damage_type,
-                damage_source=DamageSource.ULT,
+                damage_source=damage_source,
                 attacker_is_player=attacker_is_player,
             )
             apply_damage(caster, target, result)
             results.append((target, result))
 
-        caster.energy = 0.0
-        self._trigger_passives(caster, SkillType.ULT)
+        return results
+
+    def _execute_spread(
+        self,
+        skill: Skill,
+        caster: Character,
+        targets: list[Character],
+        battle_state: 'BattleState' = None,
+        damage_source: 'DamageSource' = DamageSource.SPECIAL,
+    ) -> list[tuple[Character, 'DamageResult']]:
+        """
+        扩散技能执行：主目标受全额伤害，其他目标受扩散伤害
+        """
+        from .damage import calculate_damage, apply_damage
+
+        results = []
+        attacker_is_player = not caster.is_enemy
+
+        if not targets:
+            return results
+
+        # 主目标受全额伤害
+        primary_target = targets[0]
+        eff_mult = self._effective_multiplier(skill, 0)  # 主目标全额
+        result = calculate_damage(
+            caster, primary_target,
+            skill_multiplier=eff_mult,
+            damage_type=skill.damage_type,
+            damage_source=damage_source,
+            attacker_is_player=attacker_is_player,
+        )
+        apply_damage(caster, primary_target, result)
+        results.append((primary_target, result))
+
+        # 扩散目标受扩散伤害
+        spread_targets = skill.get_spread_targets(targets, primary_target)
+        for i, target in enumerate(spread_targets):
+            eff_mult = self._effective_multiplier(skill, i + 1)  # 扩散目标有衰减
+            result = calculate_damage(
+                caster, target,
+                skill_multiplier=eff_mult,
+                damage_type=skill.damage_type,
+                damage_source=damage_source,
+                attacker_is_player=attacker_is_player,
+            )
+            apply_damage(caster, target, result)
+            results.append((target, result))
+
         return results
 
     def _trigger_passives(self, caster: Character, trigger_type: SkillType) -> None:
@@ -332,6 +464,12 @@ def build_skills_from_json(data: list[dict]) -> dict[str, list[Skill]]:
                 battle_points_gain=int(s.get("battle_points_gain", 0)),
                 hit_energy_gain=int(s.get("hit_energy_gain", 10)),
                 break_power=float(s.get("break_power", 0.0)),
+                target_count=int(s.get("target_count", 1)),
+                aoe_multiplier=float(s.get("aoe_multiplier", 0.8)),
+                ricochet_count=int(s.get("ricochet_count", 0)),
+                ricochet_decay=float(s.get("ricochet_decay", 0.8)),
+                spread_count=int(s.get("spread_count", 0)),
+                spread_multiplier=float(s.get("spread_multiplier", 0.5)),
             ))
         result[char_name] = skills
     return result
@@ -339,6 +477,10 @@ def build_skills_from_json(data: list[dict]) -> dict[str, list[Skill]]:
 
 def assign_default_skills(char: Character, skills_data: list[dict]) -> None:
     """根据角色名从技能数据中分配技能，未找到时使用默认普攻"""
+    # 如果角色已经有技能，跳过（避免重复分配）
+    if char.skills:
+        return
+    
     for entry in skills_data:
         if entry["character"] == char.name:
             for s in entry["skills"]:
@@ -353,6 +495,12 @@ def assign_default_skills(char: Character, skills_data: list[dict]) -> None:
                     battle_points_gain=int(s.get("battle_points_gain", 0)),
                     hit_energy_gain=int(s.get("hit_energy_gain", 10)),
                     break_power=float(s.get("break_power", 0.0)),
+                    target_count=int(s.get("target_count", 1)),
+                    aoe_multiplier=float(s.get("aoe_multiplier", 0.8)),
+                    ricochet_count=int(s.get("ricochet_count", 0)),
+                    ricochet_decay=float(s.get("ricochet_decay", 0.8)),
+                    spread_count=int(s.get("spread_count", 0)),
+                    spread_multiplier=float(s.get("spread_multiplier", 0.5)),
                 ))
             return
     # Fallback: 添加默认普攻
