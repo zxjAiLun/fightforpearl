@@ -42,6 +42,127 @@ shared_battle_points = 0
 shared_battle_points_limit = 3
 
 
+class FloatingDamageNumber:
+    """
+    飘字 - 伤害/治疗数字浮动显示
+    
+    用于在战斗中显示造成的伤害、治疗、暴击等数值。
+    """
+    
+    def __init__(
+        self,
+        text: str,
+        x: float,
+        y: float,
+        color: tuple,
+        is_crit: bool = False,
+        is_heal: bool = False,
+    ):
+        self.text = text
+        self.x = x
+        self.y = y
+        self.start_y = y
+        self.color = color
+        self.is_crit = is_crit
+        self.is_heal = is_heal
+        self.alpha = 255
+        self.lifetime = 60  # 持续60帧（约1秒）
+        self.speed = 1.5  # 向上飘动的速度
+        
+        # 暴击时字体更大
+        self.font_size = 24 if is_crit else 18
+    
+    def update(self) -> bool:
+        """
+        更新飘字状态
+        返回True表示飘字仍然存活，False表示已消失
+        """
+        self.y -= self.speed
+        self.lifetime -= 1
+        
+        # 后期渐隐
+        if self.lifetime < 20:
+            self.alpha = int(255 * (self.lifetime / 20))
+        
+        return self.lifetime > 0
+    
+    def draw(self, screen: pygame.Surface, font: pygame.font.Font) -> None:
+        """绘制飘字"""
+        if self.alpha <= 0:
+            return
+        
+        # 创建带有Alpha通道的表面
+        text_surface = font.render(self.text, True, self.color)
+        text_surface.set_alpha(self.alpha)
+        
+        # 绘制阴影
+        shadow_surface = font.render(self.text, True, (0, 0, 0))
+        shadow_surface.set_alpha(self.alpha // 2)
+        shadow_rect = shadow_surface.get_rect(center=(self.x + 2, self.y + 2))
+        screen.blit(shadow_surface, shadow_rect)
+        
+        # 绘制文字
+        text_rect = text_surface.get_rect(center=(self.x, self.y))
+        screen.blit(text_surface, text_rect)
+
+
+class FloatingDamageManager:
+    """
+    飘字管理器 - 管理所有飘字
+    """
+    
+    def __init__(self):
+        self.numbers: list[FloatingDamageNumber] = []
+        self.font_cache: dict[int, pygame.font.Font] = {}
+    
+    def add_damage(
+        self,
+        damage: int,
+        x: float,
+        y: float,
+        is_crit: bool = False,
+        is_heal: bool = False,
+        element: str = None,
+    ) -> None:
+        """添加伤害数字"""
+        # 确定颜色
+        if is_heal:
+            color = GREEN
+        elif is_crit:
+            color = YELLOW
+        elif element:
+            color = ELEMENT_COLORS.get(element, WHITE)
+        else:
+            color = WHITE
+        
+        # 创建飘字
+        prefix = "💥 " if is_crit else ""
+        text = f"{prefix}{damage}"
+        
+        num = FloatingDamageNumber(
+            text=text,
+            x=x,
+            y=y,
+            color=color,
+            is_crit=is_crit,
+            is_heal=is_heal,
+        )
+        self.numbers.append(num)
+    
+    def update(self) -> None:
+        """更新所有飘字，移除已消失的"""
+        self.numbers = [n for n in self.numbers if n.update()]
+    
+    def draw(self, screen: pygame.Surface) -> None:
+        """绘制所有飘字"""
+        for num in self.numbers:
+            font_size = num.font_size
+            if font_size not in self.font_cache:
+                self.font_cache[font_size] = pygame.font.Font(None, font_size)
+            font = self.font_cache[font_size]
+            num.draw(screen, font)
+
+
 class GUIStyle:
     def __init__(self):
         self.font = None
@@ -771,6 +892,9 @@ class BattleGUI:
         # 技能信息面板
         self.skill_info_panel = SkillInfoPanel(SCREEN_WIDTH - 220, 200, 200, 250)
         
+        # 伤害数字飘字管理器
+        self.damage_manager = FloatingDamageManager()
+        
         self._init_panels()
         
     def _init_panels(self) -> None:
@@ -933,6 +1057,39 @@ class BattleGUI:
             webbrowser.open(os.path.abspath(filepath))
         except:
             pass
+    
+    def add_damage_number(
+        self,
+        damage: int,
+        target: 'Character',
+        is_crit: bool = False,
+        is_heal: bool = False,
+    ) -> None:
+        """添加伤害数字飘字"""
+        # 找到目标在面板上的位置
+        panel = None
+        if target.is_enemy:
+            for p in self.enemy_panels:
+                if p.char_ref == target:
+                    panel = p
+                    break
+        else:
+            for p in self.player_panels:
+                if p.char_ref == target:
+                    panel = p
+                    break
+        
+        if panel:
+            x = panel.rect.centerx
+            y = panel.rect.top + 30
+            self.damage_manager.add_damage(
+                damage=damage,
+                x=x,
+                y=y,
+                is_crit=is_crit,
+                is_heal=is_heal,
+                element=target.element.name if hasattr(target, 'element') else None,
+            )
 
     def draw(self) -> None:
         self.screen.fill((20, 20, 25))
@@ -968,6 +1125,10 @@ class BattleGUI:
         self.screen.blit(hint_text, (self.log_panel.rect.x, self.log_panel.rect.y - 20))
         
         self.battle_points_display.draw(self.screen, self.style, shared_battle_points, shared_battle_points_limit)
+        
+        # 更新和绘制伤害飘字
+        self.damage_manager.update()
+        self.damage_manager.draw(self.screen)
         
         if self.is_battle_over:
             overlay = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
