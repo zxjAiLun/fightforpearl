@@ -224,6 +224,7 @@ def main():
     parser.add_argument("--export", type=str, default=None, help="导出战斗日志到指定文件")
     parser.add_argument("--team", type=str, default=None, help="指定队伍角色（逗号分隔，如'星,银狼,姬子,布洛妮娅'）")
     parser.add_argument("--enemy", type=int, default=2, help="敌人数量（默认2）")
+    parser.add_argument("--player", action="store_true", help="启用玩家手动技能选择")
     args = parser.parse_args()
     
     # 自定义队伍
@@ -245,19 +246,27 @@ def main():
         enemies.append(enemy)
     
     log_level = BattleEngine.FULL_DETAIL if args.full else BattleEngine.DAMAGE_ONLY
-    engine = battle_demo_with_custom_team(player_team, enemies, log_level)
+    engine = battle_demo_with_custom_team(player_team, enemies, log_level, player_control=args.player)
     
     if args.export:
         engine.export_to_json(args.export)
         print(f"\n战斗日志已导出到: {args.export}")
 
 
-def battle_demo_with_custom_team(player_team, enemies, log_level=BattleEngine.DAMAGE_ONLY):
-    """使用自定义队伍的演示战斗"""
+def battle_demo_with_custom_team(player_team, enemies, log_level=BattleEngine.DAMAGE_ONLY, player_control=False):
+    """使用自定义队伍的演示战斗
+    
+    Args:
+        player_team: 玩家队伍
+        enemies: 敌人队伍
+        log_level: 日志级别
+        player_control: 是否启用玩家手动控制
+    """
     
     print("=" * 70)
     print("⚔️  Fight for Pearl — 战斗演示")
     print(f"日志级别: {'全部事件' if log_level == BattleEngine.FULL_DETAIL else '仅伤害'}")
+    print(f"玩家控制: {'启用' if player_control else '关闭(AI自动)'}")
     print("=" * 70)
 
     state = BattleState(
@@ -269,6 +278,10 @@ def battle_demo_with_custom_team(player_team, enemies, log_level=BattleEngine.DA
     )
 
     engine = BattleEngine(state, log_level=log_level)
+    
+    # 启用玩家手动控制
+    if player_control:
+        engine.enable_player_control(callback=prompt_skill_selection)
     
     if log_level == BattleEngine.FULL_DETAIL:
         engine.set_logger(print_battle_event_full)
