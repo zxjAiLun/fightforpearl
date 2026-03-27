@@ -713,5 +713,57 @@
       "quantum_res_pct": 0.0,
       "imaginary_res_pct": 0.0
     }
+  },
+  {
+    "name": "海瑟音",
+    "element": "PHYSICAL",
+    "energy_limit": 110,
+    "stat": {
+      "base_max_hp": 4600,
+      "base_atk": 2200,
+      "base_def": 1000,
+      "base_spd": 122,
+      "hp_pct": 0.0,
+      "atk_pct": 0.28,
+      "def_pct": 0.0,
+      "spd_pct": 0.0,
+      "hp_flat": 0,
+      "atk_flat": 0,
+      "def_flat": 0,
+      "crit_rate": 0.05,
+      "crit_dmg": 1.5,
+      "effect_hit": 0.1,
+      "effect_res": 0.0,
+      "dmg_pct": 0.0,
+      "break_efficiency": 1.0,
+      "energy_recovery_rate": 1.0,
+      "physical_dmg_pct": 50.0,
+      "wind_dmg_pct": 0.0,
+      "thunder_dmg_pct": 0.0,
+      "fire_dmg_pct": 0.0,
+      "ice_dmg_pct": 0.0,
+      "quantum_dmg_pct": 0.0,
+      "imaginary_dmg_pct": 0.0,
+      "physical_res_pct": 0.0,
+      "wind_res_pct": 0.0,
+      "thunder_res_pct": 0.0,
+      "fire_res_pct": 0.0,
+      "ice_res_pct": 0.0,
+      "quantum_res_pct": 0.0,
+      "imaginary_res_pct": 0.0
+    },
+    "follow_up_triggers": [
+      {
+        "name": "海妖在欢唱",
+        "condition": "AFTER_BASIC",
+        "condition_value": 0.0,
+        "trigger_skill_type": "BASIC",
+        "chance": 1.0,
+        "multiplier": 0.0,
+        "damage_type": "PHYSICAL",
+        "target_scope": "trigger",
+        "description": "我方攻击时100%概率使敌人陷入DOT"
+      }
+    ]
   }
 ]

@@ -464,6 +464,9 @@ class Character:
     # Modifier系统
     modifier_manager: Optional['ModifierManager'] = field(default=None, repr=False)
 
+    # 护盾系统
+    shield_manager: Optional['ShieldManager'] = field(default=None, repr=False)
+
     kill_energy_gain: int = 10
     hit_energy_gain: int = 10
 

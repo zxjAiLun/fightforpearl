@@ -685,7 +685,7 @@
         "name": "Aegis Vitae",
         "type": "BASIC",
         "cost": 0,
-        "multiplier": 0.50,
+        "multiplier": 0.5,
         "damage_type": "PHYSICAL",
         "description": "对指定敌方单体造成50%攻击力的物理属性伤害",
         "energy_gain": 20.0,
@@ -709,7 +709,7 @@
         "name": "A Dragon's Zenith Knows No Rue",
         "type": "ULT",
         "cost": 3,
-        "multiplier": 1.50,
+        "multiplier": 1.5,
         "damage_type": "PHYSICAL",
         "description": "对所有敌人造成150% ATK物理伤害，为全体提供护盾，龙灵进入强化状态额外2次追击",
         "energy_gain": 5.0,
@@ -751,7 +751,7 @@
         "name": "世事如棋，四步堪杀",
         "type": "ULT",
         "cost": 3,
-        "multiplier": 2.40,
+        "multiplier": 2.4,
         "damage_type": "WIND",
         "description": "对敌方全体造成144%/240%攻击力的风属性伤害，获得2点充能",
         "energy_gain": 5.0,
@@ -759,6 +759,128 @@
         "break_power": 20,
         "target_count": -1,
         "aoe_multiplier": 0.8
+      }
+    ]
+  },
+  {
+    "character": "风堇",
+    "skills": [
+      {
+        "name": "当微风轻吻云沫",
+        "type": "BASIC",
+        "cost": 0,
+        "multiplier": 0.25,
+        "damage_type": "WIND",
+        "description": "对指定敌方单体造成等同于风堇25%生命上限的风属性伤害",
+        "energy_gain": 20.0,
+        "battle_points_gain": 1,
+        "break_power": 30
+      },
+      {
+        "name": "爱在虹光洒落时",
+        "type": "SPECIAL",
+        "cost": 1,
+        "multiplier": 0.0,
+        "damage_type": "WIND",
+        "description": "召唤忆灵小伊卡，为我方全体回复风堇4%HP上限+40，为小伊卡回复5%HP上限+50",
+        "energy_gain": 30.0,
+        "battle_points_gain": 0,
+        "break_power": 0,
+        "is_support_skill": true,
+        "support_modifier_name": "召唤小伊卡"
+      },
+      {
+        "name": "飞入晨昏的我们",
+        "type": "ULT",
+        "cost": 3,
+        "multiplier": 0.0,
+        "damage_type": "WIND",
+        "description": "召唤忆灵小伊卡，为我方全体回复风堇5%HP上限+50，为小伊卡回复6%HP上限+60，风堇进入【雨过天晴】状态",
+        "energy_gain": 5.0,
+        "battle_points_gain": 0,
+        "break_power": 0,
+        "target_count": -1,
+        "is_support_skill": true,
+        "support_modifier_name": "雨过天晴"
+      },
+      {
+        "name": "疗愈世间的晨曦",
+        "type": "TALENT",
+        "cost": 0,
+        "multiplier": 0.0,
+        "damage_type": "WIND",
+        "description": "小伊卡初始拥有风堇50%HP上限，治疗提供时小伊卡伤害+40%/层，持续2回合，最多3层",
+        "energy_gain": 0.0,
+        "battle_points_gain": 0,
+        "break_power": 0,
+        "is_support_skill": true
+      }
+    ]
+  },
+  {
+    "character": "海瑟音",
+    "skills": [
+      {
+        "name": "小调，止水中回响",
+        "type": "BASIC",
+        "cost": 0,
+        "multiplier": 0.5,
+        "damage_type": "PHYSICAL",
+        "description": "对指定敌方单体造成50% ATK物理属性伤害",
+        "energy_gain": 20.0,
+        "battle_points_gain": 1,
+        "break_power": 30
+      },
+      {
+        "name": "泛音，暗流后齐鸣",
+        "type": "SPECIAL",
+        "cost": 1,
+        "multiplier": 0.7,
+        "damage_type": "PHYSICAL",
+        "description": "使敌方全体受到伤害提高10%持续3回合，对敌方全体造成70% ATK物理伤害",
+        "energy_gain": 30.0,
+        "battle_points_gain": 0,
+        "break_power": 30,
+        "target_count": -1,
+        "aoe_multiplier": 1.0
+      },
+      {
+        "name": "绝海回涛，噬魂舞曲",
+        "type": "ULT",
+        "cost": 3,
+        "multiplier": 1.2,
+        "damage_type": "PHYSICAL",
+        "description": "展开结界(3回合)，降低敌方攻击防御各15%，全体120% ATK物理伤害，DOT触发追加伤害",
+        "energy_gain": 5.0,
+        "battle_points_gain": 0,
+        "break_power": 60,
+        "target_count": -1,
+        "aoe_multiplier": 1.0
+      },
+      {
+        "name": "海妖在欢唱",
+        "type": "TALENT",
+        "cost": 0,
+        "multiplier": 0.0,
+        "damage_type": "PHYSICAL",
+        "description": "我方攻击时100%概率使敌人陷入风化/裂伤/灼烧/触电DOT，优先不同状态",
+        "energy_gain": 0.0,
+        "battle_points_gain": 0,
+        "break_power": 0,
+        "is_follow_up": true
+      },
+      {
+        "name": "于海的栖息地",
+        "type": "FESTIVITY",
+        "cost": 0,
+        "multiplier": 0.0,
+        "damage_type": "PHYSICAL",
+        "description": "制造特殊领域使敌人陷入醉心状态，战斗开始时使敌人陷入2种DOT",
+        "energy_gain": 0.0,
+        "battle_points_gain": 0,
+        "break_power": 0,
+        "is_support_skill": true,
+        "support_modifier_name": "于海的栖息地"
       }
     ]
   }

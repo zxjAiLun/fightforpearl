@@ -100,6 +100,17 @@ def create_character_from_preset(name: str) -> Character:
     if name == "遐蝶":
         from .character_skills.castorice import create_castorice_passives
         char.passives.extend(create_castorice_passives())
+    if name == "丹恒·腾荒":
+        from .character_skills.danheng_percival import create_danheng_percival_passives, create_souldragon
+        char.passives.extend(create_danheng_percival_passives())
+        # 初始化龙灵为None（战技后召唤）
+        char.souldragon = None
+        # 初始化挚友状态
+        from .character_skills.danheng_percival import BondmateState
+        char.bondmate_state = BondmateState()
+        # 初始化护盾管理器
+        from .character_skills.danheng_percival import ShieldManager
+        char.shield_manager = ShieldManager(char)
     
     # 从skills.json加载技能数据并分配
     try:

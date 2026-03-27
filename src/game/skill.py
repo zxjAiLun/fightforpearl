@@ -171,6 +171,26 @@ class SkillExecutor:
 
         caster.energy = 0.0
         self._trigger_passives(caster, SkillType.ULT)
+        
+        # 丹恒·腾荒终结技特殊处理：龙灵强化
+        if skill.name == "A Dragon's Zenith Knows No Rue" and caster.name == "丹恒·腾荒":
+            from src.game.character_skills.danheng_percival import (
+                calculate_skill_shield_hp,
+                apply_shield,
+                create_souldragon,
+            )
+            # 全队护盾
+            shield_hp = calculate_skill_shield_hp(caster)
+            all_targets = battle_state.player_team if battle_state else []
+            for t in all_targets:
+                if t.is_alive():
+                    apply_shield(t, shield_hp, "A Dragon's Zenith Knows No Rue", 3.0, 3)
+            # 龙灵强化（额外2次追击 + 提前行动）
+            if not hasattr(caster, 'souldragon') or caster.souldragon is None:
+                caster.souldragon = create_souldragon(caster)
+            caster.souldragon.enhanced_actions += 2
+            caster.souldragon.action_value -= 10000  # 提前行动100%
+        
         return results
 
     def _execute_ricochet(
@@ -316,6 +336,42 @@ class SkillExecutor:
                     modifier_type=ModifierType.BUFF,
                     crit_dmg_pct=0.6,  # +60%爆伤
                 )
+            elif skill.name == "Terra Omnibus":
+                # 丹恒·腾荒战技：护盾 + 设置挚友
+                from src.game.character_skills.danheng_percival import (
+                    execute_danheng_special_skill,
+                    calculate_skill_shield_hp,
+                    apply_shield,
+                    BondmateState,
+                    create_souldragon,
+                )
+                # 指定挚友（第一个目标）
+                bondmate = targets[0] if targets else None
+                if bondmate and hasattr(caster, 'bondmate_state'):
+                    caster.bondmate_state.target = bondmate
+                # 为全队提供护盾
+                shield_hp = calculate_skill_shield_hp(caster)
+                all_targets = battle_state.player_team if battle_state else targets
+                for t in all_targets:
+                    if t.is_alive():
+                        apply_shield(t, shield_hp, "Terra Omnibus", 3.0, 3)
+                # 召唤龙灵
+                if not hasattr(caster, 'souldragon') or caster.souldragon is None:
+                    caster.souldragon = create_souldragon(caster)
+                result = DamageResult(
+                    final_damage=0,
+                    is_crit=False,
+                    base_damage=0.0,
+                    crit_multiplier=1.0,
+                    def_reduction=0.0,
+                    dmg_pct_total=0.0,
+                    vuln_multiplier=0.0,
+                    damage_source=damage_source,
+                    break_triggered=False,
+                    break_result=None,
+                    resisted=False,
+                )
+                results.append((target, result))
             
             if mod:
                 target.add_modifier(mod)
