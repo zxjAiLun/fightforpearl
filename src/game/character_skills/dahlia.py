@@ -102,7 +102,8 @@ def create_dahlia_talent_skill() -> Skill:
         description="进入战斗大丽花和1名队友成为【共舞者】，共舞者攻击弱点击破目标时将削韧转化为超击破伤害，受到另一位共舞者攻击后大丽花追加攻击5次×15% ATK火伤，每回合最多1次",
         energy_gain=2.0,  # per hit
         break_power=9,
-        bounce_count=5,
+        spread_count=5,
+        spread_multiplier=1.0,
     )
 
 
@@ -115,6 +116,7 @@ def create_dahlia_passives() -> list[Passive]:
             trigger=SkillType.ABILITY_PASSIVE,
             effect_type="break_atk_party_buff",
             value=0.0,
+            duration=0,
             description="进入战斗时使其他角色击破特攻提高（大丽花击破特攻×24%+50%），持续1回合，受治疗或护盾时再次触发持续3回合",
         ),
         # A2: 效果抵抗+4%
@@ -123,6 +125,7 @@ def create_dahlia_passives() -> list[Passive]:
             trigger=SkillType.ABILITY_PASSIVE,
             effect_type="effect_res_increase",
             value=0.04,
+            duration=0,
             description="效果抵抗+4%",
         ),
         # A2: 击破特攻+5.3%
@@ -131,6 +134,7 @@ def create_dahlia_passives() -> list[Passive]:
             trigger=SkillType.ABILITY_PASSIVE,
             effect_type="break_efficiency_increase",
             value=0.053,
+            duration=0,
             description="击破特攻+5.3%",
         ),
         # A3: 速度+2
@@ -139,6 +143,7 @@ def create_dahlia_passives() -> list[Passive]:
             trigger=SkillType.ABILITY_PASSIVE,
             effect_type="spd_increase",
             value=2,
+            duration=0,
             description="速度+2",
         ),
         # A3: 致哀，故人 - 追加攻击回战技点
@@ -147,6 +152,7 @@ def create_dahlia_passives() -> list[Passive]:
             trigger=SkillType.ABILITY_PASSIVE,
             effect_type="follow_up_skill_point",
             value=1.0,
+            duration=0,
             description="施放天赋追加攻击时为我方恢复1个战技点，每施放2次追加攻击可触发1次",
         ),
         # A4: 击破特攻+8%
@@ -155,6 +161,7 @@ def create_dahlia_passives() -> list[Passive]:
             trigger=SkillType.ABILITY_PASSIVE,
             effect_type="break_efficiency_increase",
             value=0.08,
+            duration=0,
             description="击破特攻+8%",
         ),
         # A4: 效果抵抗+6%
@@ -163,6 +170,7 @@ def create_dahlia_passives() -> list[Passive]:
             trigger=SkillType.ABILITY_PASSIVE,
             effect_type="effect_res_increase",
             value=0.06,
+            duration=0,
             description="效果抵抗+6%",
         ),
         # A5: 击破特攻+8%
@@ -171,6 +179,7 @@ def create_dahlia_passives() -> list[Passive]:
             trigger=SkillType.ABILITY_PASSIVE,
             effect_type="break_efficiency_increase",
             value=0.08,
+            duration=0,
             description="击破特攻+8%",
         ),
         # A5: 弃旧，恋新 - 添加弱点时速度提高+额外削韧
@@ -179,6 +188,7 @@ def create_dahlia_passives() -> list[Passive]:
             trigger=SkillType.ABILITY_PASSIVE,
             effect_type="weakness_add_spd",
             value=30,
+            duration=0,
             description="我方为目标添加弱点时速度+30%持续2回合，火属性角色添加弱点后额外造成20点火属性固定削韧并恢复10%能量上限能量",
         ),
         # A6: 速度+3
@@ -187,6 +197,7 @@ def create_dahlia_passives() -> list[Passive]:
             trigger=SkillType.ABILITY_PASSIVE,
             effect_type="spd_increase",
             value=3,
+            duration=0,
             description="速度+3",
         ),
         # A6: 效果抵抗+8%
@@ -195,6 +206,7 @@ def create_dahlia_passives() -> list[Passive]:
             trigger=SkillType.ABILITY_PASSIVE,
             effect_type="effect_res_increase",
             value=0.08,
+            duration=0,
             description="效果抵抗+8%",
         ),
         # Lv75: 击破特攻+5.3%
@@ -203,6 +215,7 @@ def create_dahlia_passives() -> list[Passive]:
             trigger=SkillType.ABILITY_PASSIVE,
             effect_type="break_efficiency_increase",
             value=0.053,
+            duration=0,
             description="击破特攻+5.3%",
         ),
         # Lv1: 击破特攻+10.7%
@@ -211,6 +224,7 @@ def create_dahlia_passives() -> list[Passive]:
             trigger=SkillType.ABILITY_PASSIVE,
             effect_type="break_efficiency_increase",
             value=0.107,
+            duration=0,
             description="击破特攻+10.7%",
         ),
     ]

@@ -67,7 +67,6 @@ def create_cipher_special_skill() -> Skill:
         break_power=60,
         target_count=-1,
         aoe_multiplier=0.50,
-        effect_hit_rate=1.20,
     )
 
 
@@ -108,6 +107,7 @@ def create_cipher_passives() -> list[Passive]:
             trigger=SkillType.ABILITY_PASSIVE,
             effect_type="spd_crit_record_bonus",
             value=0.0,
+            duration=0,
             description="速度>=140/170时暴击率+25%/+50%，记录值+50%/+100%",
         ),
         # A2: 量子属性伤害+3.2%
@@ -116,6 +116,7 @@ def create_cipher_passives() -> list[Passive]:
             trigger=SkillType.ABILITY_PASSIVE,
             effect_type="quantum_dmg_increase",
             value=0.032,
+            duration=0,
             description="量子属性伤害提高3.2%",
         ),
         # A3: 速度+2
@@ -124,6 +125,7 @@ def create_cipher_passives() -> list[Passive]:
             trigger=SkillType.ABILITY_PASSIVE,
             effect_type="spd_increase",
             value=2,
+            duration=0,
             description="速度+2",
         ),
         # A3: 效果命中+4%
@@ -132,6 +134,7 @@ def create_cipher_passives() -> list[Passive]:
             trigger=SkillType.ABILITY_PASSIVE,
             effect_type="effect_hit_increase",
             value=0.04,
+            duration=0,
             description="效果命中+4%",
         ),
         # A3: 三百侠盗 - 记录非老主顾目标伤害
@@ -140,6 +143,7 @@ def create_cipher_passives() -> list[Passive]:
             trigger=SkillType.ABILITY_PASSIVE,
             effect_type="record_all_targets",
             value=0.08,  # 记录8%
+            duration=0,
             description="赛飞儿记录我方对【老主顾】以外目标造成的非真实伤害的8%",
         ),
         # A4: 速度+3
@@ -148,6 +152,7 @@ def create_cipher_passives() -> list[Passive]:
             trigger=SkillType.ABILITY_PASSIVE,
             effect_type="spd_increase",
             value=3,
+            duration=0,
             description="速度+3",
         ),
         # A4: 量子属性伤害+4.8%
@@ -156,6 +161,7 @@ def create_cipher_passives() -> list[Passive]:
             trigger=SkillType.ABILITY_PASSIVE,
             effect_type="quantum_dmg_increase",
             value=0.048,
+            duration=0,
             description="量子属性伤害提高4.8%",
         ),
         # A5: 速度+3
@@ -164,6 +170,7 @@ def create_cipher_passives() -> list[Passive]:
             trigger=SkillType.ABILITY_PASSIVE,
             effect_type="spd_increase",
             value=3,
+            duration=0,
             description="速度+3",
         ),
         # A5: 偷天换日 - 天赋追加攻击暴击伤害+100%，在场时敌方全体受伤害+40%
@@ -172,6 +179,7 @@ def create_cipher_passives() -> list[Passive]:
             trigger=SkillType.ABILITY_PASSIVE,
             effect_type="talent_crit_dmg_bonus",
             value=1.0,  # +100%
+            duration=0,
             description="天赋追加攻击暴击伤害+100%，赛飞儿在场时敌方全体受到伤害+40%",
         ),
         # A6: 效果命中+6%
@@ -180,6 +188,7 @@ def create_cipher_passives() -> list[Passive]:
             trigger=SkillType.ABILITY_PASSIVE,
             effect_type="effect_hit_increase",
             value=0.06,
+            duration=0,
             description="效果命中+6%",
         ),
         # A6: 量子属性伤害+6.4%
@@ -188,6 +197,7 @@ def create_cipher_passives() -> list[Passive]:
             trigger=SkillType.ABILITY_PASSIVE,
             effect_type="quantum_dmg_increase",
             value=0.064,
+            duration=0,
             description="量子属性伤害提高6.4%",
         ),
         # Lv75: 速度+2
@@ -196,6 +206,7 @@ def create_cipher_passives() -> list[Passive]:
             trigger=SkillType.ABILITY_PASSIVE,
             effect_type="spd_increase",
             value=2,
+            duration=0,
             description="速度+2",
         ),
         # Lv1: 速度+4
@@ -204,6 +215,7 @@ def create_cipher_passives() -> list[Passive]:
             trigger=SkillType.ABILITY_PASSIVE,
             effect_type="spd_increase",
             value=4,
+            duration=0,
             description="速度+4",
         ),
     ]

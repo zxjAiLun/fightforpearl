@@ -51,11 +51,10 @@ def create_mydei_basic_skill() -> Skill:
         type=SkillType.BASIC,
         multiplier=0.25,
         damage_type=Element.IMAGINARY,
-        description="对指定敌方单体造成等同于万敌25%生命上限的虚数属性伤害",
+        description="对指定敌方单体造成等同于万敌25%生命上限的虚数属性伤害（生命上限百分比）",
         energy_gain=20.0,
         battle_points_gain=1,
         break_power=30,
-        multiplier_type="max_hp",  # 生命上限百分比
     )
 
 
@@ -67,52 +66,44 @@ def create_mydei_special_skill() -> Skill:
         cost=1,
         multiplier=0.45,  # 对主目标45% Max HP
         damage_type=Element.IMAGINARY,
-        description="消耗50%当前生命值，对指定敌方单体造成45% Max HP虚数伤害，对相邻目标造成25% Max HP虚数伤害",
+        description="消耗50%当前生命值，对指定敌方单体造成45% Max HP虚数伤害，对相邻目标造成25% Max HP虚数伤害（生命上限百分比）",
         energy_gain=30.0,
         battle_points_gain=0,
         break_power=60,
         target_count=-1,
         aoe_multiplier=0.25,
-        hp_cost_pct=0.50,  # 消耗50%当前HP
-        multiplier_type="max_hp",
     )
 
 
 def create_mydei_enhanced_skill_1() -> Skill:
-    """强化战技1：弑王成王"""
+    """强化战技1：弑王成王（自动施放）"""
     return Skill(
         name="弑王成王",
         type=SkillType.SPECIAL,
         cost=0,  # 自动施放，不消耗战技点
         multiplier=0.55,
         damage_type=Element.IMAGINARY,
-        description="消耗35%当前生命值，对敌方单体造成55% Max HP虚数伤害，对相邻目标造成33% Max HP虚数伤害",
+        description="消耗35%当前生命值，对敌方单体造成55% Max HP虚数伤害，对相邻目标造成33% Max HP虚数伤害（生命上限百分比，血仇状态下自动施放）",
         energy_gain=30.0,
         break_power=60,
         target_count=-1,
         aoe_multiplier=0.33,
-        hp_cost_pct=0.35,
-        multiplier_type="max_hp",
-        is_auto=True,
     )
 
 
 def create_mydei_enhanced_skill_2() -> Skill:
-    """强化战技2：弑神登神"""
+    """强化战技2：弑神登神（自动施放，消耗150充能）"""
     return Skill(
         name="弑神登神",
         type=SkillType.SPECIAL,
         cost=0,  # 自动施放
         multiplier=1.40,
         damage_type=Element.IMAGINARY,
-        description="消耗150点充能，对敌方单体造成140% Max HP虚数伤害，对相邻目标造成84% Max HP虚数伤害",
+        description="消耗150点充能，对敌方单体造成140% Max HP虚数伤害，对相邻目标造成84% Max HP虚数伤害（生命上限百分比）",
         energy_gain=10.0,
         break_power=90,
         target_count=-1,
         aoe_multiplier=0.84,
-        charge_cost=150,
-        multiplier_type="max_hp",
-        is_auto=True,
     )
 
 
@@ -123,14 +114,11 @@ def create_mydei_ult_skill() -> Skill:
         type=SkillType.ULT,
         multiplier=0.96,
         damage_type=Element.IMAGINARY,
-        description="回复15% Max HP并积攒20点充能，对指定敌方单体造成96% Max HP虚数伤害，对相邻造成60% Max HP虚数伤害，使目标与相邻目标陷入嘲讽状态2回合",
+        description="回复15% Max HP并积攒20点充能，对指定敌方单体造成96% Max HP虚数伤害，对相邻造成60% Max HP虚数伤害，使目标与相邻目标嘲讽2回合",
         energy_gain=5.0,
         break_power=60,
         target_count=-1,
         aoe_multiplier=0.60,
-        heal_pct=0.15,
-        charge_gain=20,
-        multiplier_type="max_hp",
     )
 
 
@@ -156,6 +144,7 @@ def create_mydei_passives() -> list[Passive]:
             trigger=SkillType.ABILITY_PASSIVE,
             effect_type="blood_fury_no_exit",
             value=3,
+            duration=0,
             description="【血仇】状态下受到致命攻击时不会退出该状态，该效果单场战斗可触发3次",
         ),
         # A2: 生命值+4%
@@ -164,6 +153,7 @@ def create_mydei_passives() -> list[Passive]:
             trigger=SkillType.ABILITY_PASSIVE,
             effect_type="hp_increase",
             value=0.04,
+            duration=0,
             description="生命值+4%",
         ),
         # A2: 暴击伤害+5.3%
@@ -172,6 +162,7 @@ def create_mydei_passives() -> list[Passive]:
             trigger=SkillType.ABILITY_PASSIVE,
             effect_type="crit_dmg_increase",
             value=0.053,
+            duration=0,
             description="暴击伤害+5.3%",
         ),
         # A3: 速度+2
@@ -180,6 +171,7 @@ def create_mydei_passives() -> list[Passive]:
             trigger=SkillType.ABILITY_PASSIVE,
             effect_type="spd_increase",
             value=2,
+            duration=0,
             description="速度+2",
         ),
         # A3: 三十僭主 - 血仇状态下免疫控制
@@ -188,6 +180,7 @@ def create_mydei_passives() -> list[Passive]:
             trigger=SkillType.ABILITY_PASSIVE,
             effect_type="blood_fury_cc_immune",
             value=0.0,
+            duration=0,
             description="【血仇】状态下万敌免疫控制类负面状态",
         ),
         # A4: 暴击伤害+8%
@@ -196,6 +189,7 @@ def create_mydei_passives() -> list[Passive]:
             trigger=SkillType.ABILITY_PASSIVE,
             effect_type="crit_dmg_increase",
             value=0.08,
+            duration=0,
             description="暴击伤害+8%",
         ),
         # A4: 生命值+6%
@@ -204,6 +198,7 @@ def create_mydei_passives() -> list[Passive]:
             trigger=SkillType.ABILITY_PASSIVE,
             effect_type="hp_increase",
             value=0.06,
+            duration=0,
             description="生命值+6%",
         ),
         # A5: 暴击伤害+8%
@@ -212,6 +207,7 @@ def create_mydei_passives() -> list[Passive]:
             trigger=SkillType.ABILITY_PASSIVE,
             effect_type="crit_dmg_increase",
             value=0.08,
+            duration=0,
             description="暴击伤害+8%",
         ),
         # A5: 血祥罩衫 - HP上限超4000部分暴击率+受治疗加成
@@ -220,6 +216,7 @@ def create_mydei_passives() -> list[Passive]:
             trigger=SkillType.ABILITY_PASSIVE,
             effect_type="hp_excess_crit_heal",
             value=0.0,
+            duration=0,
             description="战斗开始时若HP上限>4000，每超100点暴击率+1.2%，受伤害充能+2.5%，受治疗+0.75%",
         ),
         # A6: 速度+3
@@ -228,6 +225,7 @@ def create_mydei_passives() -> list[Passive]:
             trigger=SkillType.ABILITY_PASSIVE,
             effect_type="spd_increase",
             value=3,
+            duration=0,
             description="速度+3",
         ),
         # A6: 生命值+8%
@@ -236,6 +234,7 @@ def create_mydei_passives() -> list[Passive]:
             trigger=SkillType.ABILITY_PASSIVE,
             effect_type="hp_increase",
             value=0.08,
+            duration=0,
             description="生命值+8%",
         ),
         # Lv75: 暴击伤害+10.7%
@@ -244,6 +243,7 @@ def create_mydei_passives() -> list[Passive]:
             trigger=SkillType.ABILITY_PASSIVE,
             effect_type="crit_dmg_increase",
             value=0.107,
+            duration=0,
             description="暴击伤害+10.7%",
         ),
         # Lv80: 暴击伤害+5.3%
@@ -252,6 +252,7 @@ def create_mydei_passives() -> list[Passive]:
             trigger=SkillType.ABILITY_PASSIVE,
             effect_type="crit_dmg_increase",
             value=0.053,
+            duration=0,
             description="暴击伤害+5.3%",
         ),
     ]

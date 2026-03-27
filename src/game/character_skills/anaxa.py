@@ -61,8 +61,8 @@ def create_anaxa_special_skill() -> Skill:
         description="对指定敌方单体造成35%攻击力伤害，并额外弹射4次，每次对随机敌方造成35% ATK伤害，场上每有1个可攻击目标伤害+20%",
         energy_gain=6.0,  # per hit
         break_power=30,
-        bounce_count=4,
-        bounce_multiplier=0.35,
+        ricochet_count=4,
+        ricochet_decay=1.0,  # no decay
     )
 
 
@@ -104,6 +104,7 @@ def create_anaxa_passives() -> list[Passive]:
             trigger=SkillType.ABILITY_PASSIVE,
             effect_type="energy_on_basic",
             value=10.0,
+            duration=0,
             description="施放普攻时额外恢复10点能量，回合开始时若不存在【质性揭露】状态目标则恢复30点能量",
         ),
         # A2: 暴击率+2.7%
@@ -112,6 +113,7 @@ def create_anaxa_passives() -> list[Passive]:
             trigger=SkillType.ABILITY_PASSIVE,
             effect_type="crit_rate_increase",
             value=0.027,
+            duration=0,
             description="暴击率+2.7%",
         ),
         # A3: 风属性伤害+3.2%
@@ -120,6 +122,7 @@ def create_anaxa_passives() -> list[Passive]:
             trigger=SkillType.ABILITY_PASSIVE,
             effect_type="wind_dmg_increase",
             value=0.032,
+            duration=0,
             description="风属性伤害提高3.2%",
         ),
         # A3: 生命值+4%
@@ -128,6 +131,7 @@ def create_anaxa_passives() -> list[Passive]:
             trigger=SkillType.ABILITY_PASSIVE,
             effect_type="hp_increase",
             value=0.04,
+            duration=0,
             description="生命值+4%",
         ),
         # A4: 必要的留白 - 智识角色数量触发效果
@@ -136,6 +140,7 @@ def create_anaxa_passives() -> list[Passive]:
             trigger=SkillType.ABILITY_PASSIVE,
             effect_type="erudition_bonus",
             value=0.0,
+            duration=0,
             description="根据我方智识命途角色数量触发：1名时暴击伤害+140%，至少2名时我方全体伤害+50%",
         ),
         # A4: 风属性伤害+4.8%
@@ -144,6 +149,7 @@ def create_anaxa_passives() -> list[Passive]:
             trigger=SkillType.ABILITY_PASSIVE,
             effect_type="wind_dmg_increase",
             value=0.048,
+            duration=0,
             description="风属性伤害提高4.8%",
         ),
         # A4: 暴击率+4%
@@ -152,6 +158,7 @@ def create_anaxa_passives() -> list[Passive]:
             trigger=SkillType.ABILITY_PASSIVE,
             effect_type="crit_rate_increase",
             value=0.04,
+            duration=0,
             description="暴击率+4%",
         ),
         # A5: 风属性伤害+4.8%
@@ -160,6 +167,7 @@ def create_anaxa_passives() -> list[Passive]:
             trigger=SkillType.ABILITY_PASSIVE,
             effect_type="wind_dmg_increase",
             value=0.048,
+            duration=0,
             description="风属性伤害提高4.8%",
         ),
         # A5: 质性的嬗变 - 属性弱点增加无视防御
@@ -168,6 +176,7 @@ def create_anaxa_passives() -> list[Passive]:
             trigger=SkillType.ABILITY_PASSIVE,
             effect_type="weakness_def_ignore",
             value=0.04,  # 每弱点4%防御无视，最多7个
+            duration=0,
             description="敌方每拥有1个不同属性弱点，那刻夏对其伤害无视4%防御力",
         ),
         # A6: 生命值+6%
@@ -176,6 +185,7 @@ def create_anaxa_passives() -> list[Passive]:
             trigger=SkillType.ABILITY_PASSIVE,
             effect_type="hp_increase",
             value=0.06,
+            duration=0,
             description="生命值+6%",
         ),
         # A6: 暴击率+5.3%
@@ -184,6 +194,7 @@ def create_anaxa_passives() -> list[Passive]:
             trigger=SkillType.ABILITY_PASSIVE,
             effect_type="crit_rate_increase",
             value=0.053,
+            duration=0,
             description="暴击率+5.3%",
         ),
         # Lv75: 风属性伤害+3.2%
@@ -192,6 +203,7 @@ def create_anaxa_passives() -> list[Passive]:
             trigger=SkillType.ABILITY_PASSIVE,
             effect_type="wind_dmg_increase",
             value=0.032,
+            duration=0,
             description="风属性伤害提高3.2%",
         ),
         # Lv1/Lv80: 风属性伤害+6.4% (combined as Lv80)
@@ -200,6 +212,7 @@ def create_anaxa_passives() -> list[Passive]:
             trigger=SkillType.ABILITY_PASSIVE,
             effect_type="wind_dmg_increase",
             value=0.064,
+            duration=0,
             description="风属性伤害提高6.4%",
         ),
     ]

@@ -225,6 +225,7 @@ def create_aglaea_passives() -> list[Passive]:
             trigger=SkillType.ABILITY_PASSIVE,
             effect_type="至高之姿_atk_bonus",
             value=0.0,
+            duration=0,
             description="处于【至高之姿】状态时，阿格莱雅与衣匠的攻击力提高",
         ),
         # A2: 防御力+5%
@@ -233,6 +234,7 @@ def create_aglaea_passives() -> list[Passive]:
             trigger=SkillType.ABILITY_PASSIVE,
             effect_type="def_increase",
             value=0.05,
+            duration=0,
             description="防御力+5%",
         ),
         # A3: 雷属性伤害+4.8%
@@ -241,6 +243,7 @@ def create_aglaea_passives() -> list[Passive]:
             trigger=SkillType.ABILITY_PASSIVE,
             effect_type="thunder_dmg_increase",
             value=0.048,
+            duration=0,
             description="雷属性伤害提高4.8%",
         ),
         # A4: 织运之竭 - 衣匠消失时保留1层速度层数
@@ -249,6 +252,7 @@ def create_aglaea_passives() -> list[Passive]:
             trigger=SkillType.ABILITY_PASSIVE,
             effect_type="tailor_spd_stack_preserve",
             value=1,
+            duration=0,
             description="衣匠消失时，忆灵天赋的速度提高层数最多保留1层",
         ),
         # A4: 暴击率+4%
@@ -257,6 +261,7 @@ def create_aglaea_passives() -> list[Passive]:
             trigger=SkillType.ABILITY_PASSIVE,
             effect_type="crit_rate_increase",
             value=0.04,
+            duration=0,
             description="暴击率+4%",
         ),
         # A5: 雷属性伤害+4.8%
@@ -265,6 +270,7 @@ def create_aglaea_passives() -> list[Passive]:
             trigger=SkillType.ABILITY_PASSIVE,
             effect_type="thunder_dmg_increase",
             value=0.048,
+            duration=0,
             description="雷属性伤害提高4.8%",
         ),
         # A5: 飞驰之阳 - 能量不足50%时恢复至50%
@@ -273,6 +279,7 @@ def create_aglaea_passives() -> list[Passive]:
             trigger=SkillType.ABILITY_PASSIVE,
             effect_type="energy_fill_to_50",
             value=0.0,
+            duration=0,
             description="战斗开始时，若自身能量不足50%，恢复自身能量至50%",
         ),
         # A6: 防御力+7.5%
@@ -281,6 +288,7 @@ def create_aglaea_passives() -> list[Passive]:
             trigger=SkillType.ABILITY_PASSIVE,
             effect_type="def_increase",
             value=0.075,
+            duration=0,
             description="防御力+7.5%",
         ),
         # A6: 暴击率+5.3%
@@ -289,6 +297,7 @@ def create_aglaea_passives() -> list[Passive]:
             trigger=SkillType.ABILITY_PASSIVE,
             effect_type="crit_rate_increase",
             value=0.053,
+            duration=0,
             description="暴击率+5.3%",
         ),
         # Lv75: 雷属性伤害+6.4%
@@ -297,6 +306,7 @@ def create_aglaea_passives() -> list[Passive]:
             trigger=SkillType.ABILITY_PASSIVE,
             effect_type="thunder_dmg_increase",
             value=0.064,
+            duration=0,
             description="雷属性伤害提高6.4%",
         ),
         # Lv80: 雷属性伤害+3.2%
@@ -305,6 +315,7 @@ def create_aglaea_passives() -> list[Passive]:
             trigger=SkillType.ABILITY_PASSIVE,
             effect_type="thunder_dmg_increase",
             value=0.032,
+            duration=0,
             description="雷属性伤害提高3.2%",
         ),
     ]
