@@ -1238,5 +1238,111 @@
         "break_power": 9
       }
     ]
+  },
+  {
+    "character": "忘归人",
+    "skills": [
+      {
+        "name": "焕焕辰尾",
+        "type": "BASIC",
+        "cost": 0,
+        "multiplier": 0.5,
+        "damage_type": "FIRE",
+        "description": "对指定敌方单体造成50%攻击力的火属性伤害",
+        "energy_gain": 20.0,
+        "battle_points_gain": 1,
+        "break_power": 30
+      },
+      {
+        "name": "有道祥见，衔书摇风",
+        "type": "SPECIAL",
+        "cost": 1,
+        "multiplier": 0.0,
+        "damage_type": "FIRE",
+        "description": "使目标获得【狐祈】：击破特攻+15%，可无视弱点削韧",
+        "energy_gain": 30.0,
+        "battle_points_gain": 0,
+        "break_power": 0,
+        "is_support_skill": true,
+        "support_modifier_name": "狐祈"
+      },
+      {
+        "name": "阳极照世，离火满缀",
+        "type": "ULT",
+        "cost": 3,
+        "multiplier": 1.0,
+        "damage_type": "FIRE",
+        "description": "对敌方全体造成100%火属性伤害，无视弱点削韧",
+        "energy_gain": 5.0,
+        "battle_points_gain": 0,
+        "break_power": 60,
+        "target_count": -1
+      },
+      {
+        "name": "善盈后福，德气流布",
+        "type": "TALENT",
+        "cost": 0,
+        "multiplier": 0.5,
+        "damage_type": "FIRE",
+        "description": "攻击弱点击破目标时，削韧值转化为50%超击破伤害",
+        "energy_gain": 0.0,
+        "battle_points_gain": 0,
+        "break_power": 0
+      }
+    ]
+  },
+  {
+    "character": "阮梅",
+    "skills": [
+      {
+        "name": "一针幽兰",
+        "type": "BASIC",
+        "cost": 0,
+        "multiplier": 0.5,
+        "damage_type": "ICE",
+        "description": "对指定敌方单体造成50%攻击力的冰属性伤害",
+        "energy_gain": 20.0,
+        "battle_points_gain": 1,
+        "break_power": 30
+      },
+      {
+        "name": "慢捻抹复挑",
+        "type": "SPECIAL",
+        "cost": 1,
+        "multiplier": 0.0,
+        "damage_type": "ICE",
+        "description": "获得【弦外音】3回合，我方伤害+16%，击破效率+50%",
+        "energy_gain": 30.0,
+        "battle_points_gain": 0,
+        "break_power": 0,
+        "is_support_skill": true,
+        "support_modifier_name": "弦外音"
+      },
+      {
+        "name": "摇花缎水，沾衣不摘",
+        "type": "ULT",
+        "cost": 3,
+        "multiplier": 0.0,
+        "damage_type": "ICE",
+        "description": "展开结界2回合，全队抗性穿透+15%",
+        "energy_gain": 5.0,
+        "battle_points_gain": 0,
+        "break_power": 0,
+        "is_support_skill": true,
+        "support_modifier_name": "阮梅结界",
+        "target_count": -1
+      },
+      {
+        "name": "分型的螺旋",
+        "type": "TALENT",
+        "cost": 0,
+        "multiplier": 0.6,
+        "damage_type": "ICE",
+        "description": "队友击破弱点时，阮梅造成60%冰属性击破伤害",
+        "energy_gain": 0.0,
+        "battle_points_gain": 0,
+        "break_power": 0
+      }
+    ]
   }
 ]
