@@ -677,5 +677,89 @@
         "is_support_skill": true
       }
     ]
+  },
+  {
+    "character": "丹恒·腾荒",
+    "skills": [
+      {
+        "name": "Aegis Vitae",
+        "type": "BASIC",
+        "cost": 0,
+        "multiplier": 0.50,
+        "damage_type": "PHYSICAL",
+        "description": "对指定敌方单体造成50%攻击力的物理属性伤害",
+        "energy_gain": 20.0,
+        "battle_points_gain": 1,
+        "break_power": 30
+      },
+      {
+        "name": "Terra Omnibus",
+        "type": "SPECIAL",
+        "cost": 1,
+        "multiplier": 0.0,
+        "damage_type": "PHYSICAL",
+        "description": "指定一名我方角色为【挚友】，为全体提供护盾（14% ATK+100）持续3回合，护盾可叠加上限300%",
+        "energy_gain": 30.0,
+        "battle_points_gain": 0,
+        "break_power": 0,
+        "is_support_skill": true,
+        "support_modifier_name": "Terra Omnibus-护盾"
+      },
+      {
+        "name": "A Dragon's Zenith Knows No Rue",
+        "type": "ULT",
+        "cost": 3,
+        "multiplier": 1.50,
+        "damage_type": "PHYSICAL",
+        "description": "对所有敌人造成150% ATK物理伤害，为全体提供护盾，龙灵进入强化状态额外2次追击",
+        "energy_gain": 5.0,
+        "battle_points_gain": 0,
+        "break_power": 60,
+        "target_count": -1,
+        "aoe_multiplier": 1.0
+      }
+    ]
+  },
+  {
+    "character": "刻律德菈",
+    "skills": [
+      {
+        "name": "易位，兵贵神速",
+        "type": "BASIC",
+        "cost": 0,
+        "multiplier": 1.0,
+        "damage_type": "WIND",
+        "description": "对指定敌方单体造成50%/100%攻击力的风属性伤害",
+        "energy_gain": 20.0,
+        "battle_points_gain": 1,
+        "break_power": 10
+      },
+      {
+        "name": "升变，士皆可帅",
+        "type": "SPECIAL",
+        "cost": 1,
+        "multiplier": 0.0,
+        "damage_type": "WIND",
+        "description": "使指定我方单体角色获得【军功】，充能达到6时升级为【爵位】",
+        "energy_gain": 30.0,
+        "battle_points_gain": 0,
+        "break_power": 0,
+        "is_support_skill": true,
+        "support_modifier_name": "军功"
+      },
+      {
+        "name": "世事如棋，四步堪杀",
+        "type": "ULT",
+        "cost": 3,
+        "multiplier": 2.40,
+        "damage_type": "WIND",
+        "description": "对敌方全体造成144%/240%攻击力的风属性伤害，获得2点充能",
+        "energy_gain": 5.0,
+        "battle_points_gain": 0,
+        "break_power": 20,
+        "target_count": -1,
+        "aoe_multiplier": 0.8
+      }
+    ]
   }
 ]
