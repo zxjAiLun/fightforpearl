@@ -114,6 +114,18 @@ def create_character_from_preset(name: str) -> Character:
     if name == "海瑟音":
         from .character_skills.hysilens import create_hysilens_passives
         char.passives.extend(create_hysilens_passives())
+    if name == "罗刹":
+        from .character_skills.luocha import create_luocha_passives
+        char.passives.extend(create_luocha_passives())
+    if name == "玲可":
+        from .character_skills.lynx import create_lynx_passives
+        char.passives.extend(create_lynx_passives())
+    if name == "佩拉":
+        from .character_skills.pela import create_pela_passives
+        char.passives.extend(create_pela_passives())
+    if name == "黑天鹅":
+        from .character_skills.blackswan import create_blackswan_passives
+        char.passives.extend(create_blackswan_passives())
     
     # 从skills.json加载技能数据并分配
     try:

@@ -77,7 +77,7 @@ def create_bronya_ult_skill() -> Skill:
         type=SkillType.ULT,
         multiplier=0.0,
         damage_type=Element.WIND,
-        description="我方全体攻击力+33%，暴击伤害+12%+12%持续2回合",
+        description="我方全体攻击力+25%，暴击伤害+25%持续2回合",
         energy_gain=5.0,
         break_power=0,
         is_support_skill=True,

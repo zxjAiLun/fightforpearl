@@ -87,13 +87,12 @@ def create_blackswan_special_skill() -> Skill:
         type=SkillType.SPECIAL,
         cost=1,
         multiplier=0.45,
-        secondary_multiplier=0.45,
         damage_type=Element.WIND,
         description="对指定敌方单体及其相邻目标造成45%攻击力的风属性伤害，100%基础概率使目标与相邻目标陷入1层奥迹，防御力降低14.8%，持续3回合",
         energy_gain=30.0,
         break_power=60,
-        target_count=2,
-        aoe_multiplier=1.0,
+        spread_count=1,
+        spread_multiplier=1.0,
     )
 
 
@@ -122,10 +121,6 @@ def create_blackswan_talent_skill() -> Skill:
         description="敌方目标每回合开始时每受到1次持续伤害，有50%的基础概率陷入1层奥迹。奥迹状态下每回合开始受到96%攻击力风属性持续伤害，每层使伤害倍率提高4.8%，最多叠加50层",
         energy_gain=0.0,
         break_power=0,
-        is_dot=True,
-        dot_multiplier=0.96,
-        dot_stack_bonus=0.048,
-        max_dot_stacks=50,
     )
 
 
