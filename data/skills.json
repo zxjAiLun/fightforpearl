@@ -1344,5 +1344,78 @@
         "break_power": 0
       }
     ]
+  },
+  {
+    "character": "流萤",
+    "skills": [
+      {
+        "name": "指令-闪燃推进",
+        "type": "BASIC",
+        "cost": 0,
+        "multiplier": 0.5,
+        "damage_type": "FIRE",
+        "description": "对指定敌方单体造成50%攻击力的火属性伤害",
+        "energy_gain": 20.0,
+        "battle_points_gain": 1,
+        "break_power": 30
+      },
+      {
+        "name": "火萤Ⅳ型-底火斩击",
+        "type": "BASIC",
+        "cost": 0,
+        "multiplier": 1.0,
+        "damage_type": "FIRE",
+        "description": "回复20%HP，造成100%ATK伤害",
+        "energy_gain": 20.0,
+        "battle_points_gain": 1,
+        "break_power": 45
+      },
+      {
+        "name": "指令-天火轰击",
+        "type": "SPECIAL",
+        "cost": 1,
+        "multiplier": 1.0,
+        "damage_type": "FIRE",
+        "description": "消耗40%HP恢复50%能量，造成100%ATK伤害",
+        "energy_gain": 0.0,
+        "battle_points_gain": 0,
+        "break_power": 60
+      },
+      {
+        "name": "火萤Ⅳ型-死星过载",
+        "type": "SPECIAL",
+        "cost": 0,
+        "multiplier": 1.0,
+        "damage_type": "FIRE",
+        "description": "回复25%HP，添加火弱点，造成(0.2*击破特攻+100%)伤害",
+        "energy_gain": 0.0,
+        "battle_points_gain": 0,
+        "break_power": 90
+      },
+      {
+        "name": "火萤Ⅳ型-完全燃烧",
+        "type": "ULT",
+        "cost": 3,
+        "multiplier": 0.0,
+        "damage_type": "FIRE",
+        "description": "进入【完全燃烧】状态，行动提前100%",
+        "energy_gain": 5.0,
+        "battle_points_gain": 0,
+        "break_power": 0,
+        "is_support_skill": true,
+        "support_modifier_name": "完全燃烧"
+      },
+      {
+        "name": "茧式源火中枢",
+        "type": "TALENT",
+        "cost": 0,
+        "multiplier": 0.0,
+        "damage_type": "FIRE",
+        "description": "HP越低受伤越低，能量<50%时恢复",
+        "energy_gain": 0.0,
+        "battle_points_gain": 0,
+        "break_power": 0
+      }
+    ]
   }
 ]
