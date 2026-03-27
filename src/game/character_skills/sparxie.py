@@ -14,20 +14,20 @@
 - 对指定敌方单体造成等同于角色50%攻击力的火属性伤害
 
 【战技】魔女的四重罪
-- Break 30/hit
+- Break 30
 - 对随机敌方目标造成4次等同于角色40%攻击力的火属性伤害
 - 每次伤害递减15%
 
 【终结技】魔女的终夜狂舞
-- Break 60/hit
+- Break 60
 - 对敌方全体造成3次等同于角色80%攻击力的火属性伤害
 
-【天赋】魔女的燃命说
+【被动1】魔女的永燃论
+- 火属性伤害提高12%
+
+【被动2】魔女的燃命说
 - 每次攻击造成伤害时，额外造成1次等同于角色10%攻击力的火属性伤害
 - 视为追加攻击
-
-【被动】魔女的永燃论
-- 火属性伤害提高12%
 """
 
 from src.game.modifier import Modifier, ModifierType, ModifierStacking
@@ -59,9 +59,8 @@ def create_sparxie_special_skill() -> Skill:
         description="对随机目标造成4次40%ATK伤害，每次递减15%",
         energy_gain=0.0,
         break_power=30,
-        # 弹射效果
         ricochet_count=3,  # 4次攻击 = 1次主目标 + 3次弹射
-        ricochet_decay=0.85,  # 每次递减15%
+        ricochet_decay=0.85,
     )
 
 
@@ -75,7 +74,7 @@ def create_sparxie_ult_skill() -> Skill:
         description="对敌方全体造成3次80%ATK伤害",
         energy_gain=0.0,
         break_power=60,
-        target_count=-1,  # AOE
+        target_count=-1,
     )
 
 
@@ -83,18 +82,18 @@ def create_sparxie_passives() -> list[Passive]:
     """火花的被动技能"""
     return [
         Passive(
-            name="天赋：魔女的燃命说",
-            trigger=SkillType.ABILITY_PASSIVE,
-            effect_type="extra_attack",
-            value=0.10,  # 10% ATK追加攻击
-            description="每次攻击额外造成1次10%ATK伤害，视为追加攻击",
-        ),
-        Passive(
             name="被动：魔女的永燃论",
             trigger=SkillType.ABILITY_PASSIVE,
             effect_type="fire_dmg_increase",
-            value=0.12,  # 12%
+            value=0.12,
             description="火属性伤害提高12%",
+        ),
+        Passive(
+            name="被动：魔女的燃命说",
+            trigger=SkillType.ABILITY_PASSIVE,
+            effect_type="extra_attack",
+            value=0.10,
+            description="每次攻击额外造成1次10%ATK伤害，视为追加攻击",
         ),
     ]
 

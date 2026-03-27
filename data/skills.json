@@ -502,5 +502,48 @@
         "target_count": -1
       }
     ]
+  },
+  {
+    "character": "昔涟",
+    "skills": [
+      {
+        "name": "共鸣之触",
+        "type": "BASIC",
+        "cost": 0,
+        "multiplier": 0.80,
+        "damage_type": "IMAGINARY",
+        "description": "对1个我方目标和1个敌方目标各造成1次80%ATK伤害",
+        "energy_gain": 20.0,
+        "battle_points_gain": 1,
+        "break_power": 30
+      },
+      {
+        "name": "虚影，浊身",
+        "type": "SPECIAL",
+        "cost": 1,
+        "multiplier": 0.0,
+        "damage_type": "IMAGINARY",
+        "description": "消耗30%HP获得150%护盾，转化为浊身形态",
+        "energy_gain": 0.0,
+        "battle_points_gain": 0,
+        "break_power": 60,
+        "is_support_skill": true,
+        "support_modifier_name": "浊身形态"
+      },
+      {
+        "name": "虚影，双身",
+        "type": "ULT",
+        "cost": 3,
+        "multiplier": 0.0,
+        "damage_type": "IMAGINARY",
+        "description": "消耗50%HP获得100%护盾+行动提前100%，敌方防御-40%",
+        "energy_gain": 0.0,
+        "battle_points_gain": 0,
+        "break_power": 90,
+        "is_support_skill": true,
+        "support_modifier_name": "双身形态",
+        "target_count": -1
+      }
+    ]
   }
 ]
