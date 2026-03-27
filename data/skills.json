@@ -1488,5 +1488,758 @@
         "support_modifier_name": "取此真相-奥迹"
       }
     ]
+  },
+  {
+    "character": "藿藿",
+    "skills": [
+      {
+        "name": "令旗·征风召雨",
+        "type": "BASIC",
+        "cost": 0,
+        "multiplier": 0.25,
+        "damage_type": "WIND",
+        "description": "对指定敌方单体造成等同于藿藿25%生命上限的风属性伤害",
+        "energy_gain": 20.0,
+        "battle_points_gain": 1,
+        "break_power": 30,
+        "is_hp_damage": true
+      },
+      {
+        "name": "灵符·保命护身",
+        "type": "SPECIAL",
+        "cost": 1,
+        "multiplier": 0.0,
+        "damage_type": "WIND",
+        "description": "解除1个负面效果，为己方单体回复14%HP+140，相邻目标回复11.2%HP+112",
+        "energy_gain": 30.0,
+        "battle_points_gain": 0,
+        "break_power": 0,
+        "is_support_skill": true,
+        "support_modifier_name": "禳命"
+      },
+      {
+        "name": "尾巴·遣神役鬼",
+        "type": "ULT",
+        "cost": 3,
+        "multiplier": 0.0,
+        "damage_type": "WIND",
+        "description": "为队友恢复各自15%能量上限能量，攻击力+24%持续2回合",
+        "energy_gain": 5.0,
+        "battle_points_gain": 0,
+        "break_power": 0,
+        "target_count": -1,
+        "is_support_skill": true,
+        "support_modifier_name": "尾巴增伤"
+      },
+      {
+        "name": "凭附·气通天真",
+        "type": "TALENT",
+        "cost": 0,
+        "multiplier": 0.0,
+        "damage_type": "WIND",
+        "description": "【禳命】每回合/终结技时为队友治疗3%HP+30，治疗时驱散1个负面效果",
+        "energy_gain": 0.0,
+        "battle_points_gain": 0,
+        "break_power": 0,
+        "is_support_skill": true
+      }
+    ]
+  },
+  {
+    "character": "桂乃芬",
+    "skills": [
+      {
+        "name": "劈头满堂彩",
+        "type": "BASIC",
+        "cost": 0,
+        "multiplier": 0.5,
+        "damage_type": "FIRE",
+        "description": "对指定敌方单体造成50%攻击力的火属性伤害",
+        "energy_gain": 20.0,
+        "battle_points_gain": 1,
+        "break_power": 30
+      },
+      {
+        "name": "迎面开门红",
+        "type": "SPECIAL",
+        "cost": 1,
+        "multiplier": 0.6,
+        "secondary_multiplier": 0.2,
+        "damage_type": "FIRE",
+        "description": "对主目标60%ATK+相邻目标20%ATK火伤害，100%施加灼烧状态",
+        "energy_gain": 30.0,
+        "battle_points_gain": 0,
+        "break_power": 60,
+        "target_count": 2
+      },
+      {
+        "name": "给您来段看家戏",
+        "type": "ULT",
+        "cost": 3,
+        "multiplier": 0.72,
+        "damage_type": "FIRE",
+        "description": "对敌方全体造成72%ATK火属性伤害，灼烧目标额外触发72%伤害",
+        "energy_gain": 5.0,
+        "battle_points_gain": 0,
+        "break_power": 60,
+        "target_count": -1,
+        "aoe_multiplier": 1.0
+      },
+      {
+        "name": "古来君子养艺人",
+        "type": "TALENT",
+        "cost": 0,
+        "multiplier": 0.0,
+        "damage_type": "FIRE",
+        "description": "灼烧触发后敌方100%陷入【吞火】：受伤+4%/层，持续3回合，最多3层",
+        "energy_gain": 0.0,
+        "battle_points_gain": 0,
+        "break_power": 0,
+        "is_support_skill": true
+      }
+    ]
+  },
+  {
+    "character": "银枝",
+    "skills": [
+      {
+        "name": "芬芳一现",
+        "type": "BASIC",
+        "cost": 0,
+        "multiplier": 0.5,
+        "damage_type": "PHYSICAL",
+        "description": "对指定敌方单体造成50%攻击力的物理属性伤害",
+        "energy_gain": 20.0,
+        "battle_points_gain": 1,
+        "break_power": 30
+      },
+      {
+        "name": "公正，此处盛放",
+        "type": "SPECIAL",
+        "cost": 1,
+        "multiplier": 0.6,
+        "damage_type": "PHYSICAL",
+        "description": "对敌方全体造成60%攻击力的物理属性伤害",
+        "energy_gain": 30.0,
+        "battle_points_gain": 0,
+        "break_power": 30,
+        "target_count": -1,
+        "aoe_multiplier": 0.8
+      },
+      {
+        "name": "驻于花庭，赐与尽美",
+        "type": "ULT",
+        "cost": 2,
+        "multiplier": 0.96,
+        "damage_type": "PHYSICAL",
+        "description": "消耗90能量，对敌方全体造成96%攻击力物理伤害",
+        "energy_gain": 5.0,
+        "battle_points_gain": 0,
+        "break_power": 60,
+        "target_count": -1,
+        "aoe_multiplier": 1.0
+      },
+      {
+        "name": "「驻「我」华庭，授予至勋」",
+        "type": "ULT",
+        "cost": 4,
+        "multiplier": 1.68,
+        "damage_type": "PHYSICAL",
+        "description": "消耗180能量，对敌方全体造成168%伤害+6次57%随机单体伤害",
+        "energy_gain": 5.0,
+        "battle_points_gain": 0,
+        "break_power": 60,
+        "target_count": -1,
+        "aoe_multiplier": 1.0
+      },
+      {
+        "name": "崇高的客体",
+        "type": "TALENT",
+        "cost": 0,
+        "multiplier": 0.0,
+        "damage_type": "PHYSICAL",
+        "description": "每击中1个敌方目标恢复3能量并获得1层【升格】：暴击率+1%，最多10层",
+        "energy_gain": 3.0,
+        "battle_points_gain": 0,
+        "break_power": 0,
+        "is_support_skill": true
+      }
+    ]
+  },
+  {
+    "character": "雪衣",
+    "skills": [
+      {
+        "name": "破魔锥",
+        "type": "BASIC",
+        "cost": 0,
+        "multiplier": 0.5,
+        "damage_type": "QUANTUM",
+        "description": "对指定敌方单体造成50%攻击力的量子属性伤害",
+        "energy_gain": 20.0,
+        "battle_points_gain": 1,
+        "break_power": 30
+      },
+      {
+        "name": "摄伏诸恶",
+        "type": "SPECIAL",
+        "cost": 1,
+        "multiplier": 0.7,
+        "secondary_multiplier": 0.35,
+        "damage_type": "QUANTUM",
+        "description": "对主目标70%ATK+相邻目标35%ATK量子属性伤害",
+        "energy_gain": 30.0,
+        "battle_points_gain": 0,
+        "break_power": 60,
+        "target_count": 2,
+        "aoe_multiplier": 0.5
+      },
+      {
+        "name": "天罚贯身",
+        "type": "ULT",
+        "cost": 3,
+        "multiplier": 1.5,
+        "damage_type": "QUANTUM",
+        "description": "造成150%ATK量子伤害，无视弱点削韧，削韧越多伤害越高（最多+36%）",
+        "energy_gain": 5.0,
+        "battle_points_gain": 0,
+        "break_power": 120,
+        "ignore_weakness": true
+      },
+      {
+        "name": "十王圣断，业报恒常",
+        "type": "TALENT",
+        "cost": 0,
+        "multiplier": 1.35,
+        "damage_type": "QUANTUM",
+        "description": "【恶报】叠满时触发追加攻击：对随机单体3次45%ATK量子伤害（共135%）",
+        "energy_gain": 6.0,
+        "battle_points_gain": 0,
+        "break_power": 45,
+        "is_follow_up": true
+      }
+    ]
+  },
+  {
+    "character": "寒鸦",
+    "skills": [
+      {
+        "name": "冥谶天笔",
+        "type": "BASIC",
+        "cost": 0,
+        "multiplier": 0.5,
+        "damage_type": "PHYSICAL",
+        "description": "对指定敌方单体造成50%攻击力的物理属性伤害",
+        "energy_gain": 20.0,
+        "battle_points_gain": 1,
+        "break_power": 30
+      },
+      {
+        "name": "生灭系缚",
+        "type": "SPECIAL",
+        "cost": 1,
+        "multiplier": 1.2,
+        "damage_type": "PHYSICAL",
+        "description": "造成120%ATK物理伤害，使目标陷入【承负】：每2次攻击回复1战技点",
+        "energy_gain": 30.0,
+        "battle_points_gain": 0,
+        "break_power": 60
+      },
+      {
+        "name": "十王敕令，遍土遵行",
+        "type": "ULT",
+        "cost": 3,
+        "multiplier": 0.0,
+        "damage_type": "PHYSICAL",
+        "description": "指定队友速度+寒鸦速度的15%，攻击力+36%，持续2回合",
+        "energy_gain": 5.0,
+        "battle_points_gain": 0,
+        "break_power": 0,
+        "target_count": 1,
+        "is_support_skill": true,
+        "support_modifier_name": "十王敕令"
+      },
+      {
+        "name": "罚恶",
+        "type": "TALENT",
+        "cost": 0,
+        "multiplier": 0.0,
+        "damage_type": "PHYSICAL",
+        "description": "对【承负】目标施放普攻/战技/终结技时，造成的伤害+15%，持续2回合",
+        "energy_gain": 0.0,
+        "battle_points_gain": 0,
+        "break_power": 0,
+        "is_support_skill": true
+      }
+    ]
+  },
+  {
+    "character": "驭空",
+    "skills": [
+      {
+        "name": "流镝",
+        "type": "BASIC",
+        "cost": 0,
+        "multiplier": 0.5,
+        "damage_type": "IMAGINARY",
+        "description": "对指定敌方单体造成50%攻击力的虚数属性伤害",
+        "energy_gain": 20.0,
+        "battle_points_gain": 1,
+        "break_power": 30
+      },
+      {
+        "name": "天阙鸣弦",
+        "type": "SPECIAL",
+        "cost": 1,
+        "multiplier": 0.0,
+        "damage_type": "IMAGINARY",
+        "description": "获得2层【鸣弦号令】：我方全体攻击力+40%，每队友回合结束减1层",
+        "energy_gain": 30.0,
+        "battle_points_gain": 0,
+        "break_power": 0,
+        "target_count": -1,
+        "is_support_skill": true,
+        "support_modifier_name": "鸣弦号令"
+      },
+      {
+        "name": "贯云饮羽",
+        "type": "ULT",
+        "cost": 3,
+        "multiplier": 2.28,
+        "damage_type": "IMAGINARY",
+        "description": "持有鸣弦时：全队暴击率+21%，暴击伤害+39%，对单体造成228%虚数伤害",
+        "energy_gain": 5.0,
+        "battle_points_gain": 0,
+        "break_power": 90
+      },
+      {
+        "name": "箭彻七札",
+        "type": "TALENT",
+        "cost": 0,
+        "multiplier": 0.4,
+        "damage_type": "IMAGINARY",
+        "description": "普攻额外造成40%ATK伤害，削韧值+100%，1回合后可再次触发",
+        "energy_gain": 0.0,
+        "battle_points_gain": 0,
+        "break_power": 0
+      }
+    ]
+  },
+  {
+    "character": "托帕",
+    "skills": [
+      {
+        "name": "赤字…",
+        "type": "BASIC",
+        "cost": 0,
+        "multiplier": 0.5,
+        "damage_type": "FIRE",
+        "description": "对指定敌方单体造成50%攻击力的火属性伤害",
+        "energy_gain": 20.0,
+        "battle_points_gain": 1,
+        "break_power": 30
+      },
+      {
+        "name": "支付困难？",
+        "type": "SPECIAL",
+        "cost": 1,
+        "multiplier": 0.75,
+        "damage_type": "FIRE",
+        "description": "使目标陷入【负债证明】：追加攻击伤害+25%，账账造成75%ATK火伤害（追加攻击）",
+        "energy_gain": 30.0,
+        "battle_points_gain": 0,
+        "break_power": 60,
+        "is_follow_up": true
+      },
+      {
+        "name": "扭亏为盈！",
+        "type": "ULT",
+        "cost": 3,
+        "multiplier": 0.0,
+        "damage_type": "FIRE",
+        "description": "账账进入【涨幅惊人！】：伤害倍率+75%，暴击伤害+12.5%，攻击后行动提前50%",
+        "energy_gain": 5.0,
+        "battle_points_gain": 0,
+        "break_power": 0,
+        "target_count": -1,
+        "is_support_skill": true,
+        "support_modifier_name": "涨幅惊人"
+      },
+      {
+        "name": "猪市？！",
+        "type": "TALENT",
+        "cost": 0,
+        "multiplier": 0.75,
+        "damage_type": "FIRE",
+        "description": "账账对【负债证明】目标发动追加攻击，造成75%ATK火伤害，行动提前50%",
+        "energy_gain": 0.0,
+        "battle_points_gain": 0,
+        "break_power": 60,
+        "is_follow_up": true
+      }
+    ]
+  },
+  {
+    "character": "克拉拉",
+    "skills": [
+      {
+        "name": "我也想帮上忙",
+        "type": "BASIC",
+        "cost": 0,
+        "multiplier": 0.5,
+        "damage_type": "PHYSICAL",
+        "description": "对指定敌方单体造成50%攻击力的物理属性伤害",
+        "energy_gain": 20.0,
+        "battle_points_gain": 1,
+        "break_power": 30
+      },
+      {
+        "name": "史瓦罗在看着你",
+        "type": "SPECIAL",
+        "cost": 1,
+        "multiplier": 0.6,
+        "damage_type": "PHYSICAL",
+        "description": "对敌方全体造成60%攻击力物理伤害，并对反击标记目标额外造成60%攻击力伤害",
+        "energy_gain": 30.0,
+        "battle_points_gain": 0,
+        "break_power": 30,
+        "target_count": -1
+      },
+      {
+        "name": "是约定不是命令",
+        "type": "ULT",
+        "cost": 0,
+        "multiplier": 0.0,
+        "damage_type": "PHYSICAL",
+        "description": "受到伤害-15%，嘲讽提高，史瓦罗反击伤害+96%并攻击相邻目标，持续2回合，强化2次",
+        "energy_gain": 5.0,
+        "battle_points_gain": 0,
+        "break_power": 0,
+        "is_support_skill": true,
+        "support_modifier_name": "史瓦罗强化反击",
+        "target_count": -1
+      },
+      {
+        "name": "因为我们是家人",
+        "type": "TALENT",
+        "cost": 0,
+        "multiplier": 0.8,
+        "damage_type": "PHYSICAL",
+        "description": "攻击克拉拉的敌人被史瓦罗反击，造成80%攻击力物理伤害",
+        "energy_gain": 5.0,
+        "battle_points_gain": 0,
+        "break_power": 30
+      }
+    ]
+  },
+  {
+    "character": "虎克",
+    "skills": [
+      {
+        "name": "喂！小心火烛",
+        "type": "BASIC",
+        "cost": 0,
+        "multiplier": 0.5,
+        "damage_type": "FIRE",
+        "description": "对指定敌方单体造成50%攻击力的火属性伤害",
+        "energy_gain": 20.0,
+        "battle_points_gain": 1,
+        "break_power": 30
+      },
+      {
+        "name": "嘿！记得虎克吗",
+        "type": "SPECIAL",
+        "cost": 1,
+        "multiplier": 1.2,
+        "damage_type": "FIRE",
+        "description": "对指定敌方单体造成120%攻击力的火属性伤害，100%基础概率灼烧2回合",
+        "energy_gain": 30.0,
+        "battle_points_gain": 0,
+        "break_power": 60
+      },
+      {
+        "name": "轰！飞来焰火",
+        "type": "ULT",
+        "cost": 0,
+        "multiplier": 2.4,
+        "damage_type": "FIRE",
+        "description": "对指定敌方单体造成240%攻击力的火属性伤害，下一次战技得到强化",
+        "energy_gain": 5.0,
+        "battle_points_gain": 0,
+        "break_power": 90,
+        "is_support_skill": true,
+        "support_modifier_name": "战技强化"
+      },
+      {
+        "name": "哈！火上浇油",
+        "type": "TALENT",
+        "cost": 0,
+        "multiplier": 0.5,
+        "damage_type": "FIRE",
+        "description": "攻击灼烧状态的敌方目标时，追加50%攻击力火属性附加伤害，额外恢复5点能量",
+        "energy_gain": 5.0,
+        "battle_points_gain": 0,
+        "break_power": 30
+      }
+    ]
+  },
+  {
+    "character": "桑博",
+    "skills": [
+      {
+        "name": "酷炫的刀花",
+        "type": "BASIC",
+        "cost": 0,
+        "multiplier": 0.5,
+        "damage_type": "WIND",
+        "description": "对指定敌方单体造成50%攻击力的风属性伤害",
+        "energy_gain": 20.0,
+        "battle_points_gain": 1,
+        "break_power": 30
+      },
+      {
+        "name": "反复横跳的爱",
+        "type": "SPECIAL",
+        "cost": 1,
+        "multiplier": 0.28,
+        "damage_type": "WIND",
+        "description": "对敌方单体造成28%攻击力风属性伤害，共弹射5次（随机目标）",
+        "energy_gain": 6.0,
+        "battle_points_gain": 0,
+        "break_power": 30,
+        "target_count": 5
+      },
+      {
+        "name": "惊喜礼盒",
+        "type": "ULT",
+        "cost": 0,
+        "multiplier": 0.96,
+        "damage_type": "WIND",
+        "description": "对敌方全体造成96%攻击力风属性伤害，使敌方受到的持续伤害提高20%，持续2回合",
+        "energy_gain": 5.0,
+        "battle_points_gain": 0,
+        "break_power": 60,
+        "target_count": -1,
+        "is_support_skill": true,
+        "support_modifier_name": "持续伤害提升"
+      },
+      {
+        "name": "撕风的匕首",
+        "type": "TALENT",
+        "cost": 0,
+        "multiplier": 0.2,
+        "damage_type": "WIND",
+        "description": "击中敌人65%概率附加风化状态，每回合20%攻击力风属性持续伤害，最多5层",
+        "energy_gain": 5.0,
+        "battle_points_gain": 0,
+        "break_power": 0
+      }
+    ]
+  },
+  {
+    "character": "青雀",
+    "skills": [
+      {
+        "name": "门前清",
+        "type": "BASIC",
+        "cost": 0,
+        "multiplier": 0.5,
+        "damage_type": "QUANTUM",
+        "description": "使用1张当前花色最少的琼玉牌，对指定敌方单体造成50%攻击力的量子属性伤害",
+        "energy_gain": 20.0,
+        "battle_points_gain": 1,
+        "break_power": 30
+      },
+      {
+        "name": "海底捞月",
+        "type": "SPECIAL",
+        "cost": 1,
+        "multiplier": 0.0,
+        "damage_type": "QUANTUM",
+        "description": "立即抽取2张琼玉牌，使自身造成的伤害提高14%，持续至本回合结束，可叠加4层",
+        "energy_gain": 30.0,
+        "battle_points_gain": 0,
+        "break_power": 0,
+        "is_support_skill": true,
+        "support_modifier_name": "海底捞月增益"
+      },
+      {
+        "name": "四幺暗刻？和！",
+        "type": "ULT",
+        "cost": 0,
+        "multiplier": 1.2,
+        "damage_type": "QUANTUM",
+        "description": "对敌方全体造成120%攻击力的量子属性伤害，并获得4张相同花色的琼玉牌",
+        "energy_gain": 5.0,
+        "battle_points_gain": 0,
+        "break_power": 60,
+        "target_count": -1
+      },
+      {
+        "name": "帝垣琼玉",
+        "type": "TALENT",
+        "cost": 0,
+        "multiplier": 0.0,
+        "damage_type": "QUANTUM",
+        "description": "回合开始时随机抽取1张琼玉牌，4张相同花色进入暗杠状态，攻击力+36%",
+        "energy_gain": 5.0,
+        "battle_points_gain": 0,
+        "break_power": 0
+      }
+    ]
+  },
+  {
+    "character": "停云",
+    "skills": [
+      {
+        "name": "逐客令",
+        "type": "BASIC",
+        "cost": 0,
+        "multiplier": 0.5,
+        "damage_type": "THUNDER",
+        "description": "对指定敌方单体造成50%攻击力的雷属性伤害",
+        "energy_gain": 20.0,
+        "battle_points_gain": 1,
+        "break_power": 30
+      },
+      {
+        "name": "祥音和韵",
+        "type": "SPECIAL",
+        "cost": 1,
+        "multiplier": 0.0,
+        "damage_type": "THUNDER",
+        "description": "为指定我方单体提供【赐福】，攻击力+25%，攻击后附加20%雷伤，持续3回合",
+        "energy_gain": 30.0,
+        "battle_points_gain": 0,
+        "break_power": 0,
+        "is_support_skill": true,
+        "support_modifier_name": "赐福"
+      },
+      {
+        "name": "庆云光覆仪祷",
+        "type": "ULT",
+        "cost": 0,
+        "multiplier": 0.0,
+        "damage_type": "THUNDER",
+        "description": "为指定我方单体恢复50点能量，同时使目标造成的伤害提高20%，持续2回合",
+        "energy_gain": 5.0,
+        "battle_points_gain": 0,
+        "break_power": 0,
+        "is_support_skill": true,
+        "support_modifier_name": "庆云光覆",
+        "target_count": 1
+      },
+      {
+        "name": "紫电扶摇",
+        "type": "TALENT",
+        "cost": 0,
+        "multiplier": 0.3,
+        "damage_type": "THUNDER",
+        "description": "获得【赐福】的我方目标攻击后，额外造成30%攻击力雷属性附加伤害",
+        "energy_gain": 5.0,
+        "battle_points_gain": 0,
+        "break_power": 0
+      }
+    ]
+  },
+  {
+    "character": "彦卿",
+    "skills": [
+      {
+        "name": "霜锋点寒芒",
+        "type": "BASIC",
+        "cost": 0,
+        "multiplier": 0.5,
+        "damage_type": "ICE",
+        "description": "对指定敌方单体造成50%攻击力的冰属性伤害",
+        "energy_gain": 20.0,
+        "battle_points_gain": 1,
+        "break_power": 30
+      },
+      {
+        "name": "遥击三尺水",
+        "type": "SPECIAL",
+        "cost": 1,
+        "multiplier": 1.1,
+        "damage_type": "ICE",
+        "description": "对指定敌方单体造成110%攻击力的冰属性伤害，并附加【智剑连心】持续1回合",
+        "energy_gain": 30.0,
+        "battle_points_gain": 0,
+        "break_power": 60
+      },
+      {
+        "name": "快雨燕相逐",
+        "type": "ULT",
+        "cost": 0,
+        "multiplier": 2.1,
+        "damage_type": "ICE",
+        "description": "暴击率+60%，智剑连心时暴击伤害+30%，对指定敌方单体造成210%攻击力冰伤",
+        "energy_gain": 5.0,
+        "battle_points_gain": 0,
+        "break_power": 90
+      },
+      {
+        "name": "呼剑如影",
+        "type": "TALENT",
+        "cost": 0,
+        "multiplier": 0.25,
+        "damage_type": "ICE",
+        "description": "智剑连心状态下，攻击后50%概率追加攻击造成25%攻击力冰伤，65%概率冻结1回合",
+        "energy_gain": 10.0,
+        "battle_points_gain": 0,
+        "break_power": 30
+      }
+    ]
+  },
+  {
+    "character": "素裳",
+    "skills": [
+      {
+        "name": "云骑剑经•素霓",
+        "type": "BASIC",
+        "cost": 0,
+        "multiplier": 0.5,
+        "damage_type": "PHYSICAL",
+        "description": "对指定敌方单体造成50%攻击力的物理属性伤害",
+        "energy_gain": 20.0,
+        "battle_points_gain": 1,
+        "break_power": 30
+      },
+      {
+        "name": "云骑剑经•山倾",
+        "type": "SPECIAL",
+        "cost": 1,
+        "multiplier": 1.05,
+        "damage_type": "PHYSICAL",
+        "description": "对指定敌方单体造成105%攻击力的物理属性伤害，最后一击33%概率发动【剑势】，弱点击破时必定发动",
+        "energy_gain": 30.0,
+        "battle_points_gain": 0,
+        "break_power": 60
+      },
+      {
+        "name": "太虚形蕴•烛夜",
+        "type": "ULT",
+        "cost": 0,
+        "multiplier": 1.92,
+        "damage_type": "PHYSICAL",
+        "description": "对指定敌方单体造成192%攻击力的物理属性伤害，立即行动，攻击力+18%持续2回合，战技额外增加2次剑势判定",
+        "energy_gain": 5.0,
+        "battle_points_gain": 0,
+        "break_power": 90,
+        "is_support_skill": true,
+        "support_modifier_name": "太虚形蕴"
+      },
+      {
+        "name": "游刃若水",
+        "type": "TALENT",
+        "cost": 0,
+        "multiplier": 0.5,
+        "damage_type": "PHYSICAL",
+        "description": "场上有敌方目标的弱点被击破时，素裳的速度提高15%，持续2回合",
+        "energy_gain": 0.0,
+        "battle_points_gain": 0,
+        "break_power": 0
+      }
+    ]
   }
 ]
