@@ -1,0 +1,512 @@
+[
+  {
+    "lightcone": "梦应归于何处",
+    "type": "dmg_boost",
+    "value": 0.24
+  },
+  {
+    "lightcone": "将光阴织成黄金",
+    "type": "crit_dmg",
+    "value": 0.09
+  },
+  {
+    "lightcone": "将光阴织成黄金",
+    "type": "dmg_boost",
+    "value": 0.09
+  },
+  {
+    "lightcone": "但战斗还未结束",
+    "type": "dmg_boost",
+    "value": 0.3
+  },
+  {
+    "lightcone": "长路终有归途",
+    "type": "dmg_boost",
+    "value": 0.18
+  },
+  {
+    "lightcone": "只需等待",
+    "type": "dmg_boost",
+    "value": 0.24
+  },
+  {
+    "lightcone": "只需等待",
+    "type": "spd_boost",
+    "value": 0.048
+  },
+  {
+    "lightcone": "孤独的疗愈",
+    "type": "dmg_boost",
+    "value": 0.24
+  },
+  {
+    "lightcone": "偏偏希望无价",
+    "type": "crit_rate",
+    "value": 0.16
+  },
+  {
+    "lightcone": "偏偏希望无价",
+    "type": "dmg_boost",
+    "value": 0.12
+  },
+  {
+    "lightcone": "比阳光更明亮的",
+    "type": "crit_rate",
+    "value": 0.18
+  },
+  {
+    "lightcone": "比阳光更明亮的",
+    "type": "atk_boost",
+    "value": 0.18
+  },
+  {
+    "lightcone": "愿虹光永驻天空",
+    "type": "dmg_boost",
+    "value": 0.18
+  },
+  {
+    "lightcone": "愿虹光永驻天空",
+    "type": "spd_boost",
+    "value": 0.18
+  },
+  {
+    "lightcone": "拂晓之前",
+    "type": "crit_dmg",
+    "value": 0.36
+  },
+  {
+    "lightcone": "拂晓之前",
+    "type": "dmg_boost",
+    "value": 0.36
+  },
+  {
+    "lightcone": "黎明恰如此燃烧",
+    "type": "dmg_boost",
+    "value": 0.6
+  },
+  {
+    "lightcone": "于夜色中",
+    "type": "crit_rate",
+    "value": 0.18
+  },
+  {
+    "lightcone": "于夜色中",
+    "type": "crit_dmg",
+    "value": 0.12
+  },
+  {
+    "lightcone": "于夜色中",
+    "type": "dmg_boost",
+    "value": 0.06
+  },
+  {
+    "lightcone": "纵然山河万程",
+    "type": "dmg_boost",
+    "value": 0.24
+  },
+  {
+    "lightcone": "纵然山河万程",
+    "type": "atk_boost",
+    "value": 0.64
+  },
+  {
+    "lightcone": "一场谎言的终幕",
+    "type": "crit_rate",
+    "value": 0.18
+  },
+  {
+    "lightcone": "一场谎言的终幕",
+    "type": "dmg_boost",
+    "value": 0.2
+  },
+  {
+    "lightcone": "一场谎言的终幕",
+    "type": "atk_boost",
+    "value": 0.4
+  },
+  {
+    "lightcone": "海洋为何而歌",
+    "type": "dmg_boost",
+    "value": 0.05
+  },
+  {
+    "lightcone": "海洋为何而歌",
+    "type": "spd_boost",
+    "value": 0.1
+  },
+  {
+    "lightcone": "星海巡航",
+    "type": "crit_rate",
+    "value": 0.08
+  },
+  {
+    "lightcone": "星海巡航",
+    "type": "atk_boost",
+    "value": 0.2
+  },
+  {
+    "lightcone": "理想燃烧的地狱",
+    "type": "crit_rate",
+    "value": 0.16
+  },
+  {
+    "lightcone": "理想燃烧的地狱",
+    "type": "atk_boost",
+    "value": 0.4
+  },
+  {
+    "lightcone": "记忆永不落幕",
+    "type": "dmg_boost",
+    "value": 0.08
+  },
+  {
+    "lightcone": "记忆永不落幕",
+    "type": "spd_boost",
+    "value": 0.06
+  },
+  {
+    "lightcone": "烦恼着，幸福着",
+    "type": "crit_rate",
+    "value": 0.18
+  },
+  {
+    "lightcone": "烦恼着，幸福着",
+    "type": "crit_dmg",
+    "value": 0.12
+  },
+  {
+    "lightcone": "烦恼着，幸福着",
+    "type": "dmg_boost",
+    "value": 0.3
+  },
+  {
+    "lightcone": "镜中故我",
+    "type": "dmg_boost",
+    "value": 0.24
+  },
+  {
+    "lightcone": "爱如此刻永恒",
+    "type": "crit_dmg",
+    "value": 0.16
+  },
+  {
+    "lightcone": "爱如此刻永恒",
+    "type": "dmg_boost",
+    "value": 0.1
+  },
+  {
+    "lightcone": "爱如此刻永恒",
+    "type": "spd_boost",
+    "value": 0.18
+  },
+  {
+    "lightcone": "片刻，留在眼底",
+    "type": "crit_dmg",
+    "value": 0.36
+  },
+  {
+    "lightcone": "片刻，留在眼底",
+    "type": "dmg_boost",
+    "value": 0.36
+  },
+  {
+    "lightcone": "当她决定看见",
+    "type": "crit_rate",
+    "value": 0.1
+  },
+  {
+    "lightcone": "当她决定看见",
+    "type": "crit_dmg",
+    "value": 0.3
+  },
+  {
+    "lightcone": "当她决定看见",
+    "type": "dmg_boost",
+    "value": 0.3
+  },
+  {
+    "lightcone": "当她决定看见",
+    "type": "spd_boost",
+    "value": 0.18
+  },
+  {
+    "lightcone": "向着不可追问处",
+    "type": "crit_rate",
+    "value": 0.12
+  },
+  {
+    "lightcone": "向着不可追问处",
+    "type": "dmg_boost",
+    "value": 0.6
+  },
+  {
+    "lightcone": "金血铭刻的时代",
+    "type": "dmg_boost",
+    "value": 0.54
+  },
+  {
+    "lightcone": "金血铭刻的时代",
+    "type": "atk_boost",
+    "value": 0.64
+  },
+  {
+    "lightcone": "无可取代的东西",
+    "type": "dmg_boost",
+    "value": 0.24
+  },
+  {
+    "lightcone": "无可取代的东西",
+    "type": "atk_boost",
+    "value": 0.24
+  },
+  {
+    "lightcone": "如泥酣眠",
+    "type": "crit_rate",
+    "value": 0.36
+  },
+  {
+    "lightcone": "如泥酣眠",
+    "type": "crit_dmg",
+    "value": 0.3
+  },
+  {
+    "lightcone": "如泥酣眠",
+    "type": "dmg_boost",
+    "value": 0.3
+  },
+  {
+    "lightcone": "谎言在风中飘扬",
+    "type": "spd_boost",
+    "value": 0.18
+  },
+  {
+    "lightcone": "棺的回响",
+    "type": "atk_boost",
+    "value": 0.24
+  },
+  {
+    "lightcone": "致长夜的星光",
+    "type": "dmg_boost",
+    "value": 0.3
+  },
+  {
+    "lightcone": "那无数个春天",
+    "type": "dmg_boost",
+    "value": 0.1
+  },
+  {
+    "lightcone": "纯粹思维的洗礼",
+    "type": "crit_dmg",
+    "value": 0.2
+  },
+  {
+    "lightcone": "纯粹思维的洗礼",
+    "type": "dmg_boost",
+    "value": 0.2
+  },
+  {
+    "lightcone": "唯有香如故",
+    "type": "dmg_boost",
+    "value": 0.1
+  },
+  {
+    "lightcone": "我将，巡征追猎",
+    "type": "crit_rate",
+    "value": 0.15
+  },
+  {
+    "lightcone": "不息的演算",
+    "type": "atk_boost",
+    "value": 0.08
+  },
+  {
+    "lightcone": "不息的演算",
+    "type": "spd_boost",
+    "value": 0.08
+  },
+  {
+    "lightcone": "花花世界迷人眼",
+    "type": "crit_dmg",
+    "value": 0.48
+  },
+  {
+    "lightcone": "花花世界迷人眼",
+    "type": "dmg_boost",
+    "value": 0.48
+  },
+  {
+    "lightcone": "到不了的彼岸",
+    "type": "crit_rate",
+    "value": 0.18
+  },
+  {
+    "lightcone": "到不了的彼岸",
+    "type": "dmg_boost",
+    "value": 0.24
+  },
+  {
+    "lightcone": "驶向第二次生命",
+    "type": "spd_boost",
+    "value": 0.12
+  },
+  {
+    "lightcone": "夜色流光溢彩",
+    "type": "dmg_boost",
+    "value": 0.24
+  },
+  {
+    "lightcone": "夜色流光溢彩",
+    "type": "atk_boost",
+    "value": 0.48
+  },
+  {
+    "lightcone": "没有回报的加冕",
+    "type": "crit_dmg",
+    "value": 0.36
+  },
+  {
+    "lightcone": "没有回报的加冕",
+    "type": "dmg_boost",
+    "value": 0.36
+  },
+  {
+    "lightcone": "没有回报的加冕",
+    "type": "atk_boost",
+    "value": 0.4
+  },
+  {
+    "lightcone": "命运从未公平",
+    "type": "crit_dmg",
+    "value": 0.4
+  },
+  {
+    "lightcone": "命运从未公平",
+    "type": "dmg_boost",
+    "value": 0.4
+  },
+  {
+    "lightcone": "命运从未公平",
+    "type": "def_boost",
+    "value": 0.4
+  },
+  {
+    "lightcone": "她已闭上双眼",
+    "type": "dmg_boost",
+    "value": 0.09
+  },
+  {
+    "lightcone": "落日时起舞",
+    "type": "crit_dmg",
+    "value": 0.36
+  },
+  {
+    "lightcone": "落日时起舞",
+    "type": "dmg_boost",
+    "value": 0.36
+  },
+  {
+    "lightcone": "勿忘她的火焰",
+    "type": "dmg_boost",
+    "value": 0.32
+  },
+  {
+    "lightcone": "惊魂夜",
+    "type": "atk_boost",
+    "value": 0.024
+  },
+  {
+    "lightcone": "回到大地的飞行",
+    "type": "dmg_boost",
+    "value": 0.15
+  },
+  {
+    "lightcone": "雨一直下",
+    "type": "crit_rate",
+    "value": 0.12
+  },
+  {
+    "lightcone": "雨一直下",
+    "type": "dmg_boost",
+    "value": 0.12
+  },
+  {
+    "lightcone": "此身为剑",
+    "type": "crit_dmg",
+    "value": 0.2
+  },
+  {
+    "lightcone": "此身为剑",
+    "type": "dmg_boost",
+    "value": 0.2
+  },
+  {
+    "lightcone": "生命当付之一炬",
+    "type": "dmg_boost",
+    "value": 0.6
+  },
+  {
+    "lightcone": "行于流逝的岸",
+    "type": "crit_dmg",
+    "value": 0.36
+  },
+  {
+    "lightcone": "行于流逝的岸",
+    "type": "dmg_boost",
+    "value": 0.36
+  },
+  {
+    "lightcone": "以世界之名",
+    "type": "dmg_boost",
+    "value": 0.24
+  },
+  {
+    "lightcone": "以世界之名",
+    "type": "atk_boost",
+    "value": 0.24
+  },
+  {
+    "lightcone": "血火啊，燃烧前路",
+    "type": "dmg_boost",
+    "value": 0.3
+  },
+  {
+    "lightcone": "重塑时光之忆",
+    "type": "atk_boost",
+    "value": 0.05
+  },
+  {
+    "lightcone": "游戏尘寰",
+    "type": "crit_rate",
+    "value": 0.1
+  },
+  {
+    "lightcone": "游戏尘寰",
+    "type": "crit_dmg",
+    "value": 0.32
+  },
+  {
+    "lightcone": "游戏尘寰",
+    "type": "dmg_boost",
+    "value": 0.32
+  },
+  {
+    "lightcone": "欢愉满溢祝福",
+    "type": "atk_boost",
+    "value": 0.2
+  },
+  {
+    "lightcone": "制胜的瞬间",
+    "type": "def_boost",
+    "value": 0.24
+  },
+  {
+    "lightcone": "如果时间是一朵花",
+    "type": "crit_dmg",
+    "value": 0.36
+  },
+  {
+    "lightcone": "如果时间是一朵花",
+    "type": "dmg_boost",
+    "value": 0.36
+  }
+]
