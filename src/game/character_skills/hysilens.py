@@ -486,7 +486,6 @@ def create_hysilens_talent_skill() -> Skill:
         description="我方攻击时100%概率使敌人陷入风化/裂伤/灼烧/触电其中1种DOT",
         energy_gain=0.0,
         break_power=0,
-        is_follow_up=True,
     )
 
 
