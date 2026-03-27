@@ -157,7 +157,7 @@
   },
   {
     "name": "布洛妮娅",
-    "element": "ICE",
+    "element": "WIND",
     "energy_limit": 120,
     "stat": {
       "base_max_hp": 4500,
@@ -179,10 +179,10 @@
       "break_efficiency": 1.0,
       "energy_recovery_rate": 1.0,
       "physical_dmg_pct": 0.0,
-      "wind_dmg_pct": 0.0,
+      "wind_dmg_pct": 50.0,
       "thunder_dmg_pct": 0.0,
       "fire_dmg_pct": 0.0,
-      "ice_dmg_pct": 40.0,
+      "ice_dmg_pct": 0.0,
       "quantum_dmg_pct": 0.0,
       "imaginary_dmg_pct": 0.0,
       "physical_res_pct": 0.0,
@@ -326,7 +326,7 @@
   },
   {
     "name": "布洛妮娅",
-    "element": "THUNDER",
+    "element": "WIND",
     "energy_limit": 120,
     "stat": {
       "base_max_hp": 4000,
@@ -348,7 +348,7 @@
       "break_efficiency": 1.0,
       "energy_recovery_rate": 1.0,
       "physical_dmg_pct": 0.0,
-      "wind_dmg_pct": 0.0,
+      "wind_dmg_pct": 50.0,
       "thunder_dmg_pct": 50.0,
       "fire_dmg_pct": 0.0,
       "ice_dmg_pct": 0.0,
