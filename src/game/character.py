@@ -111,6 +111,9 @@ def create_character_from_preset(name: str) -> Character:
         # 初始化护盾管理器
         from .character_skills.danheng_percival import ShieldManager
         char.shield_manager = ShieldManager(char)
+    if name == "海瑟音":
+        from .character_skills.hysilens import create_hysilens_passives
+        char.passives.extend(create_hysilens_passives())
     
     # 从skills.json加载技能数据并分配
     try:

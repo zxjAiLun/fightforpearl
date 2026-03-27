@@ -751,10 +751,18 @@ class BreakDot:
     stacks: int = 1              # 风化叠加层数
     entangle_extra_damage: int = 0  # 纠缠：下回合额外伤害（一次性的）
     source_name: str = ""         # 来源（用于调试）
+    dot_tag: str = ""            # DOT标签，用于区分特殊DOT（如"laceration"裂伤）
+    laceration_cap: int = 0      # 裂伤(Laceration)的伤害上限：min(20%敌人MaxHP, laceration_cap)
 
     def tick(self) -> int:
         """触发一次伤害，返回伤害值"""
         self.turns_remaining -= 1
+        # 裂伤(Laceration)需要每回合重新计算伤害（基于敌人当前MaxHP）
+        if self.dot_tag == "laceration":
+            # 伤害 = min(20% * 敌人当前MaxHP, laceration_cap) * 层数
+            # 由于 BreakDot 没有对 owner 的引用，
+            # 实际伤害计算在 tick_break_dots 中进行，这里只减少回合
+            return 0  # 实际伤害在 BattleState.tick_break_dots 中计算
         return self.damage_per_tick * self.stacks
 
 
@@ -819,6 +827,12 @@ class BattleState:
 
     first_round_av: float = 150.0
     subsequent_av: float = 100.0
+
+    # 海瑟音结界追踪：活跃的结界modifier列表
+    hysilens_barriers: list = field(default_factory=list)
+
+    # 海瑟音天赋系统引用（延迟初始化）
+    hysilens_talent_system: object = field(default=None)
 
     def calculate_init_action_value(self, is_first_round: bool = True) -> float:
         spd = 100
@@ -1000,6 +1014,20 @@ class BattleState:
                 dot.entangle_extra_damage = 0
                 # 纠缠DOT触发后直接清空（只触发一次）
                 status.dot = None
+                continue
+
+            # 裂伤(Laceration)：每回合重新计算伤害
+            if dot.dot_tag == "laceration":
+                dot.turns_remaining -= 1
+                current_max_hp = char.stat.total_max_hp()
+                hp_based_dmg = int(current_max_hp * 0.20)
+                actual_dmg = min(hp_based_dmg, dot.laceration_cap)
+                actual_dmg *= dot.stacks
+                if actual_dmg > 0:
+                    char.take_damage(actual_dmg)
+                    results.append((char, actual_dmg, dot.source_name))
+                if dot.turns_remaining <= 0:
+                    status.dot = None
                 continue
 
             dmg = dot.tick()

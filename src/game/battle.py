@@ -247,6 +247,239 @@ class BattleEngine:
                     damage_result=result,
                 ))
 
+    def _trigger_hysilens_barriers(
+        self,
+        dot_results: list[tuple[Character, int, str]],
+        turn: int,
+    ) -> None:
+        """
+        处理海瑟音结界追加DOT伤害
+        
+        当敌人受到DOT伤害时，如果该敌人在海瑟音结界内，
+        触发结界追加物理DOT伤害（32% ATK，最多8次/敌人）
+        """
+        from .damage import calculate_damage, apply_damage, DamageSource
+        
+        barriers_to_remove = []
+        
+        for barrier in self.state.hysilens_barriers:
+            # 检查结界是否还有持续时间
+            if not barrier.is_active:
+                barriers_to_remove.append(barrier)
+                continue
+            
+            # 每回合减少结界持续时间
+            barrier.on_tick()
+            
+            # 检查每个受到DOT伤害的敌人是否在结界内
+            for char, dot_dmg, dot_name in dot_results:
+                triggered, bonus_dmg = barrier.trigger_dot(char, dot_name)
+                if triggered and bonus_dmg > 0:
+                    # 对结界内敌人造成追加物理DOT
+                    result = calculate_damage(
+                        attacker=barrier.owner,
+                        defender=char,
+                        skill_multiplier=0.0,  # 直接用固定伤害
+                        base_damage_add=bonus_dmg,
+                        damage_type=barrier.owner.element,
+                        damage_source=DamageSource.DOT,
+                        attacker_is_player=not barrier.owner.is_enemy,
+                    )
+                    apply_damage(barrier.owner, char, result)
+                    
+                    self._log(BattleEvent(
+                        turn=turn,
+                        actor=barrier.owner,
+                        action="BARRIER_DOT",
+                        detail=f"{char.name} 在结界中受到{dot_name}，触发结界追加伤害 {result.final_damage}",
+                        damage_result=result,
+                    ))
+            
+            # 如果结界结束，标记移除
+            if not barrier.is_active:
+                barriers_to_remove.append(barrier)
+        
+        # 清理已结束的结界
+        for barrier in barriers_to_remove:
+            if barrier in self.state.hysilens_barriers:
+                self.state.hysilens_barriers.remove(barrier)
+
+    def _ensure_hysilens_talent_system(self) -> None:
+        """
+        确保海瑟音天赋系统已初始化
+        
+        在玩家队伍中查找海瑟音，并创建对应的天赋系统
+        """
+        if self.state.hysilens_talent_system is not None:
+            return  # 已初始化
+        
+        # 在玩家队伍中查找海瑟音
+        hysilens = None
+        for char in self.state.player_team:
+            if char.name == "海瑟音":
+                hysilens = char
+                break
+        
+        if hysilens is None:
+            return  # 没有海瑟音，不需要初始化
+        
+        # 创建天赋系统
+        try:
+            from .character_skills.hysilens import HysilensTalentSystem
+            self.state.hysilens_talent_system = HysilensTalentSystem(hysilens, self.state)
+        except ImportError:
+            pass  # 海瑟音模块未安装
+
+    def _trigger_hysilens_talent(
+        self,
+        ally: Character,
+        target: Character,
+        turn: int,
+    ) -> None:
+        """
+        触发海瑟音天赋DOT
+        
+        当我方目标攻击命中敌人时，调用此方法检查是否触发海瑟音天赋
+        """
+        if self.state.hysilens_talent_system is None:
+            self._ensure_hysilens_talent_system()
+        
+        talent_system = self.state.hysilens_talent_system
+        if talent_system is None:
+            return
+        
+        # 检查海瑟音是否存活
+        if not talent_system.hysilens.is_alive():
+            return
+        
+        # 触发天赋
+        applied_dots = talent_system.on_ally_attack(ally, target)
+        for dot_name in applied_dots:
+            self._log(BattleEvent(
+                turn=turn,
+                actor=talent_system.hysilens,
+                action="TALENT_DOT",
+                detail=f"海瑟音天赋触发！{target.name} 陷入 {dot_name}",
+            ))
+
+    def _tick_hysilens_talent_dots(self) -> list[tuple[Character, int, str]]:
+        """
+        处理海瑟音天赋DOT的回合触发
+        
+        Returns:
+            [(角色, 伤害, DOT名称), ...]
+        """
+        if self.state.hysilens_talent_system is None:
+            self._ensure_hysilens_talent_system()
+        
+        talent_system = self.state.hysilens_talent_system
+        if talent_system is None:
+            return []
+        
+        return talent_system.dot_manager.tick_all()
+
+    def _apply_hysilens_a2_barrier(self) -> None:
+        """
+        触发海瑟音A2被动：战斗开始时展开与终结技相同的结界，持续3回合
+        
+        结界效果：
+        - 敌方全体攻击力-15%，防御力-15%
+        - 结界内敌人受DOT伤害时追加物理DOT(32% ATK，最多8次)
+        """
+        if self.state.hysilens_talent_system is None:
+            self._ensure_hysilens_talent_system()
+        
+        talent_system = self.state.hysilens_talent_system
+        if talent_system is None:
+            return
+        
+        hysilens = talent_system.hysilens
+        if not hysilens.is_alive():
+            return
+        
+        # 获取所有敌人
+        enemies = [c for c in self.state.enemy_team if c.is_alive()]
+        if not enemies:
+            return
+        
+        # 创建结界modifier
+        from .character_skills.hysilens import HysilensBarrierModifier
+        barrier = HysilensBarrierModifier(
+            owner=hysilens,
+            max_triggers=8,
+            dot_damage_mult=0.32,
+            duration=3,
+        )
+        
+        # 将所有敌人加入结界
+        for enemy in enemies:
+            barrier.add_enemy(enemy)
+            # 应用攻击力-15%和防御力-15%的效果
+            enemy.stat.atk_pct -= 0.15
+            enemy.stat.def_pct -= 0.15
+        
+        # 添加到战斗状态的结界列表
+        self.state.hysilens_barriers.append(barrier)
+        
+        self._log(BattleEvent(
+            turn=1,
+            actor=hysilens,
+            action="BARRIER_START",
+            detail=f"海瑟音展开结界({barrier.duration}回合)，{len(enemies)}名敌人受结界影响",
+        ))
+
+    def _apply_hysilens_ult_barrier(
+        self,
+        hysilens: Character,
+        results: list,
+        turn: int,
+    ) -> None:
+        """
+        处理海瑟音终结技的结界展开
+        
+        终结技效果：
+        - 展开结界(3回合)
+        - 敌方全体攻击力-15%，防御力-15%
+        - 结界内敌人受DOT伤害时追加物理DOT(32% ATK，最多8次)
+        """
+        # 获取所有受到终结技伤害的敌人（从results中提取）
+        seen = set()
+        enemies = []
+        for char, _ in results:
+            if char.is_alive() and id(char) not in seen:
+                seen.add(id(char))
+                enemies.append(char)
+        if not enemies:
+            return
+        
+        # 如果已有活跃结界，先移除旧的ATK/DEF debuff
+        # （简化处理：允许多个结界共存，但只保留最新的）
+        # 创建新结界
+        from .character_skills.hysilens import HysilensBarrierModifier
+        barrier = HysilensBarrierModifier(
+            owner=hysilens,
+            max_triggers=8,
+            dot_damage_mult=0.32,
+            duration=3,
+        )
+        
+        # 将目标加入结界
+        for enemy in enemies:
+            barrier.add_enemy(enemy)
+            # 应用攻击力-15%和防御力-15%的效果
+            enemy.stat.atk_pct -= 0.15
+            enemy.stat.def_pct -= 0.15
+        
+        # 添加到战斗状态的结界列表
+        self.state.hysilens_barriers.append(barrier)
+        
+        self._log(BattleEvent(
+            turn=turn,
+            actor=hysilens,
+            action="BARRIER_START",
+            detail=f"海瑟音终结技展开结界({barrier.duration}回合)，{len(enemies)}名敌人受结界影响",
+        ))
+
     def set_logger(self, cb: Callable[[BattleEvent], None]):
         self._log_callback = cb
 
@@ -514,6 +747,22 @@ class BattleEngine:
                 detail=f"{char.name} 受到 {name} 伤害 {dmg}",
             ))
 
+        # 海瑟音结界追加DOT触发
+        self._trigger_hysilens_barriers(dot_results, self._current_turn)
+
+        # 海瑟音天赋DOT处理（天赋施加的DOT，独立于break系统）
+        talent_dot_results = self._tick_hysilens_talent_dots()
+        for char, dmg, name in talent_dot_results:
+            self._log(BattleEvent(
+                turn=self._current_turn,
+                actor=char,
+                action="TALENT_DOT",
+                detail=f"{char.name} 受到天赋{name}伤害 {dmg}",
+            ))
+        # 天赋DOT也会触发结界追加伤害
+        if talent_dot_results:
+            self._trigger_hysilens_barriers(talent_dot_results, self._current_turn)
+
         self.state.end_turn_break_cleanup()
 
         alive = [c for c in self.state.player_team + self.state.enemy_team if c.is_alive()]
@@ -664,6 +913,12 @@ class BattleEngine:
         self._init_action_values()
         self._current_turn = 1
         
+        # 初始化海瑟音天赋系统
+        self._ensure_hysilens_talent_system()
+        
+        # 触发海瑟音A2被动：战斗开始时展开结界(3回合)
+        self._apply_hysilens_a2_barrier()
+        
         self._log(BattleEvent(
             turn=1,
             actor=Character("N/A"),
@@ -723,6 +978,21 @@ class BattleEngine:
                     action="DOT",
                     detail=f"{char.name} 受到 {name} 伤害 {dmg}",
                 ))
+            
+            # 海瑟音结界追加DOT触发
+            self._trigger_hysilens_barriers(dot_results, turn_counter)
+            
+            # 海瑟音天赋DOT处理
+            talent_dot_results = self._tick_hysilens_talent_dots()
+            for char, dmg, name in talent_dot_results:
+                self._log(BattleEvent(
+                    turn=turn_counter,
+                    actor=char,
+                    action="TALENT_DOT",
+                    detail=f"{char.name} 受到天赋{name}伤害 {dmg}",
+                ))
+            if talent_dot_results:
+                self._trigger_hysilens_barriers(talent_dot_results, turn_counter)
             
             self.state.end_turn_break_cleanup()
             self._current_turn += 1
@@ -809,6 +1079,10 @@ class BattleEngine:
                     detail=f"{target.name}: {break_msg}",
                 ))
             
+            # 海瑟音天赋DOT触发（我方单位攻击时）
+            if actor in self.state.player_team:
+                self._trigger_hysilens_talent(actor, target, turn_counter)
+            
             if not target.is_alive():
                 if actor in self.state.player_team:
                     kill_gain = getattr(actor, 'kill_energy_gain', 10)
@@ -827,6 +1101,10 @@ class BattleEngine:
             if target_status.break_type == BreakEffectType.ENTANGLE:
                 target_status.entangle_hit_stacks = min(5, target_status.entangle_hit_stacks + 1)
                 target.entangle_hit_stacks = target_status.entangle_hit_stacks
+        
+        # 海瑟音终结技：展开结界
+        if actor.name == "海瑟音" and skill.type == SkillType.ULT:
+            self._apply_hysilens_ult_barrier(actor, results, turn_counter)
         
         self._try_follow_up(actor, skill, results, turn_counter)
 
