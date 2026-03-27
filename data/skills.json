@@ -123,41 +123,67 @@
     "character": "姬子",
     "skills": [
       {
-        "name": "基础攻击",
+        "name": "武装调律",
         "type": "BASIC",
         "cost": 0,
-        "multiplier": 1.0,
+        "multiplier": 0.50,
         "damage_type": "FIRE",
-        "description": "普通火元素攻击",
+        "description": "对指定敌方单体造成等同于姬子50%攻击力的火属性伤害",
         "energy_gain": 20.0,
         "battle_points_gain": 1,
-        "break_power": 10
+        "break_power": 30
       },
       {
-        "name": "战技·烈焰",
+        "name": "熔核爆裂",
         "type": "SPECIAL",
         "cost": 1,
-        "multiplier": 1.5,
+        "multiplier": 1.00,
         "damage_type": "FIRE",
-        "description": "消耗1点战绩点，造成1.5倍火元素伤害，额外扩散1个目标",
+        "description": "对指定敌方单体造成100%攻击力火属性伤害，同时对其相邻目标造成40%攻击力火属性伤害",
         "energy_gain": 30.0,
         "battle_points_gain": 0,
-        "break_power": 20,
+        "break_power": 60,
         "spread_count": 1,
-        "spread_multiplier": 0.5
+        "spread_multiplier": 0.4
       },
       {
-        "name": "终结技·燃星",
+        "name": "天坠之火",
         "type": "ULT",
         "cost": 3,
-        "multiplier": 3.0,
+        "multiplier": 1.38,
         "damage_type": "FIRE",
-        "description": "消耗全部能量，对所有敌人造成2.5倍火元素伤害",
+        "description": "对敌方全体造成138%攻击力的火属性伤害，每消灭1个敌方目标额外恢复姬子5点能量",
         "energy_gain": 5.0,
         "battle_points_gain": 0,
-        "break_power": 40,
+        "break_power": 60,
         "target_count": -1,
-        "aoe_multiplier": 0.9
+        "aoe_multiplier": 1.0
+      },
+      {
+        "name": "乘胜追击",
+        "type": "TALENT",
+        "cost": 0,
+        "multiplier": 0.70,
+        "damage_type": "FIRE",
+        "description": "弱点击破后姬子获得1点充能（上限3点）。充能满时，我方目标施放攻击后姬子发动追加攻击，对敌方全体造成70%攻击力火属性伤害",
+        "energy_gain": 10.0,
+        "battle_points_gain": 0,
+        "break_power": 30,
+        "target_count": -1,
+        "is_follow_up": true
+      },
+      {
+        "name": "不完全燃烧",
+        "type": "FESTIVITY",
+        "cost": 0,
+        "multiplier": 0.0,
+        "damage_type": "FIRE",
+        "description": "进入战斗后，有100%基础概率使敌方目标受到的火属性伤害提高10%，持续2回合",
+        "energy_gain": 0.0,
+        "battle_points_gain": 0,
+        "break_power": 0,
+        "is_support_skill": true,
+        "support_modifier_name": "不完全燃烧-易伤"
       }
     ]
   },
@@ -165,41 +191,60 @@
     "character": "银狼",
     "skills": [
       {
-        "name": "基础攻击",
+        "name": "系统警告",
         "type": "BASIC",
         "cost": 0,
-        "multiplier": 1.0,
+        "multiplier": 0.50,
         "damage_type": "QUANTUM",
-        "description": "普通量子元素攻击",
+        "description": "对指定敌方单体造成等同于银狼50%攻击力的量子属性伤害",
         "energy_gain": 20.0,
         "battle_points_gain": 1,
-        "break_power": 10
+        "break_power": 30
       },
       {
-        "name": "战技·量子波",
+        "name": "是否允许更改？",
         "type": "SPECIAL",
         "cost": 1,
-        "multiplier": 1.0,
+        "multiplier": 0.98,
         "damage_type": "QUANTUM",
-        "description": "消耗1点战绩点，造成1.0倍量子伤害，弹射2次（每次衰减25%）",
+        "description": "有75%基础概率为敌方添加1个我方属性弱点（持续2回合），同时降低全属性抗性7.5%（持续2回合）。战技造成98%攻击力量子伤害",
         "energy_gain": 30.0,
         "battle_points_gain": 0,
-        "break_power": 20,
-        "ricochet_count": 2,
-        "ricochet_decay": 0.75
+        "break_power": 60
       },
       {
-        "name": "终结技·矩阵崩解",
+        "name": "账号已封禁",
         "type": "ULT",
         "cost": 3,
-        "multiplier": 2.0,
+        "multiplier": 2.28,
         "damage_type": "QUANTUM",
-        "description": "消耗全部能量，对所有敌人造成2.0倍量子伤害",
+        "description": "有85%基础概率使敌方防御力降低36%（持续3回合），同时造成228%攻击力量子伤害",
         "energy_gain": 5.0,
         "battle_points_gain": 0,
-        "break_power": 40,
-        "target_count": -1,
-        "aoe_multiplier": 0.8
+        "break_power": 90
+      },
+      {
+        "name": "等待程序响应…",
+        "type": "TALENT",
+        "cost": 0,
+        "multiplier": 0.0,
+        "damage_type": "QUANTUM",
+        "description": "银狼能够制造攻击力降低5%、防御力降低4%、速度降低3%3种【缺陷】。攻击后有60%基础概率给目标植入1个随机【缺陷】（持续3回合）",
+        "energy_gain": 0.0,
+        "battle_points_gain": 0,
+        "break_power": 0
+      },
+      {
+        "name": "强制结束进程",
+        "type": "FESTIVITY",
+        "cost": 0,
+        "multiplier": 0.80,
+        "damage_type": "QUANTUM",
+        "description": "进入战斗后对敌方全体造成80%攻击力量子伤害，无视弱点削韧",
+        "energy_gain": 0.0,
+        "battle_points_gain": 0,
+        "break_power": 60,
+        "target_count": -1
       }
     ]
   },
@@ -207,41 +252,65 @@
     "character": "瓦尔特",
     "skills": [
       {
-        "name": "基础攻击",
+        "name": "重力压制",
         "type": "BASIC",
         "cost": 0,
-        "multiplier": 1.0,
+        "multiplier": 0.50,
         "damage_type": "IMAGINARY",
-        "description": "普通虚数元素攻击",
+        "description": "对指定敌方单体造成等同于瓦尔特50%攻击力的虚数属性伤害",
         "energy_gain": 20.0,
         "battle_points_gain": 1,
-        "break_power": 10
+        "break_power": 30
       },
       {
-        "name": "战技·虚数冲击",
+        "name": "虚空断界",
         "type": "SPECIAL",
         "cost": 1,
-        "multiplier": 1.2,
+        "multiplier": 0.36,
         "damage_type": "IMAGINARY",
-        "description": "消耗1点战绩点，造成1.2倍虚数伤害，主目标+扩散2个目标",
+        "description": "对指定敌方单体造成36%攻击力虚数伤害，并额外造成2次伤害（每次对随机目标造成36%攻击力虚数伤害）。命中时有65%基础概率使目标速度降低10%，持续2回合",
         "energy_gain": 30.0,
         "battle_points_gain": 0,
-        "break_power": 20,
-        "spread_count": 2,
-        "spread_multiplier": 0.4
+        "break_power": 30,
+        "ricochet_count": 2,
+        "ricochet_decay": 1.0
       },
       {
-        "name": "终结技·世界崩解",
+        "name": "拟似黑洞",
         "type": "ULT",
         "cost": 3,
-        "multiplier": 3.0,
+        "multiplier": 0.90,
         "damage_type": "IMAGINARY",
-        "description": "消耗全部能量，对所有敌人造成2.5倍虚数伤害",
+        "description": "对敌方全体造成90%攻击力的虚数伤害，有100%基础概率使目标陷入禁锢状态（行动延后32%，速度降低10%），持续1回合",
         "energy_gain": 5.0,
         "battle_points_gain": 0,
-        "break_power": 40,
+        "break_power": 60,
         "target_count": -1,
-        "aoe_multiplier": 0.85
+        "aoe_multiplier": 1.0
+      },
+      {
+        "name": "时空扭曲",
+        "type": "TALENT",
+        "cost": 0,
+        "multiplier": 0.30,
+        "damage_type": "IMAGINARY",
+        "description": "击中处于减速状态的敌方目标时，额外造成1次30%攻击力的虚数属性附加伤害",
+        "energy_gain": 0.0,
+        "battle_points_gain": 0,
+        "break_power": 0
+      },
+      {
+        "name": "画地为牢",
+        "type": "FESTIVITY",
+        "cost": 0,
+        "multiplier": 0.0,
+        "damage_type": "IMAGINARY",
+        "description": "进入战斗后，有100%基础概率使敌方目标陷入禁锢状态（行动延后20%，速度降低10%），持续1回合",
+        "energy_gain": 0.0,
+        "battle_points_gain": 0,
+        "break_power": 0,
+        "is_support_skill": true,
+        "support_modifier_name": "画地为牢-禁锢"
       }
     ]
   },
@@ -293,8 +362,8 @@
         "type": "BASIC",
         "cost": 0,
         "multiplier": 1.0,
-        "damage_type": "THUNDER",
-        "description": "普通雷元素攻击",
+        "damage_type": "ICE",
+        "description": "普通冰元素攻击",
         "energy_gain": 20.0,
         "battle_points_gain": 1,
         "break_power": 10
@@ -304,7 +373,7 @@
         "type": "SPECIAL",
         "cost": 1,
         "multiplier": 0.0,
-        "damage_type": "THUNDER",
+        "damage_type": "ICE",
         "description": "使我方指定角色行动提前100%，快速获得额外回合",
         "energy_gain": 30.0,
         "battle_points_gain": 0,
@@ -317,7 +386,7 @@
         "type": "ULT",
         "cost": 3,
         "multiplier": 0.0,
-        "damage_type": "THUNDER",
+        "damage_type": "ICE",
         "description": "为我方全体增加爆伤，持续2回合",
         "energy_gain": 5.0,
         "battle_points_gain": 0,

@@ -18,7 +18,7 @@ def create_bronya_basic_skill() -> Skill:
         name="射击",
         type=SkillType.BASIC,
         multiplier=1.0,
-        damage_type=Element.PHYSICAL,
+        damage_type=Element.ICE,
         description="普通射击攻击",
         energy_gain=20.0,
         battle_points_gain=1,
@@ -33,7 +33,7 @@ def create_bronya_special_skill() -> Skill:
         type=SkillType.SPECIAL,
         cost=1,
         multiplier=0.0,  # 不造成伤害
-        damage_type=Element.PHYSICAL,
+        damage_type=Element.ICE,
         description="使我方指定角色行动提前100%，快速获得额外回合",
         energy_gain=30.0,
         break_power=0,
@@ -47,7 +47,7 @@ def create_bronya_ult_skill() -> Skill:
         name="轮契",
         type=SkillType.ULT,
         multiplier=0.0,  # 不造成伤害
-        damage_type=Element.PHYSICAL,
+        damage_type=Element.ICE,
         description="为我方全体增加爆伤，持续2回合",
         energy_gain=5.0,
         break_power=0,
