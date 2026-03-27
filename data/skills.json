@@ -1417,5 +1417,76 @@
         "break_power": 0
       }
     ]
+  },
+  {
+    "character": "黑天鹅",
+    "skills": [
+      {
+        "name": "洞见，缄默的黎明",
+        "type": "BASIC",
+        "cost": 0,
+        "multiplier": 0.3,
+        "damage_type": "WIND",
+        "description": "对指定敌方单体造成30%攻击力的风属性伤害，有50%的基础概率使目标陷入1层奥迹",
+        "energy_gain": 20.0,
+        "battle_points_gain": 1,
+        "break_power": 30
+      },
+      {
+        "name": "失坠，伪神的黄昏",
+        "type": "SPECIAL",
+        "cost": 1,
+        "multiplier": 0.45,
+        "secondary_multiplier": 0.45,
+        "damage_type": "WIND",
+        "description": "对指定敌方单体及其相邻目标造成45%攻击力的风属性伤害，100%基础概率使目标与相邻目标陷入1层奥迹，100%基础概率使目标与相邻目标防御力降低14.8%，持续3回合",
+        "energy_gain": 30.0,
+        "battle_points_gain": 0,
+        "break_power": 60,
+        "target_count": 2,
+        "aoe_multiplier": 1.0
+      },
+      {
+        "name": "沉醉于彼界的臂湾",
+        "type": "ULT",
+        "cost": 3,
+        "multiplier": 0.72,
+        "damage_type": "WIND",
+        "description": "使敌方全体陷入揭露状态，持续2回合。揭露状态下敌方受到伤害提高15%，奥迹每回合开始造成伤害后不会重置层数。对敌方全体造成72%攻击力的风属性伤害",
+        "energy_gain": 5.0,
+        "battle_points_gain": 0,
+        "break_power": 60,
+        "target_count": -1,
+        "aoe_multiplier": 1.0
+      },
+      {
+        "name": "无端命运的机杼",
+        "type": "TALENT",
+        "cost": 0,
+        "multiplier": 0.0,
+        "damage_type": "WIND",
+        "description": "敌方目标每回合开始时每受到1次持续伤害，有50%的基础概率陷入1层奥迹。奥迹状态下敌方目标每回合开始受到96%攻击力风属性持续伤害，每层奥迹使此伤害倍率提高4.8%，最多叠加50层",
+        "energy_gain": 0.0,
+        "battle_points_gain": 0,
+        "break_power": 0,
+        "is_dot": true,
+        "dot_multiplier": 0.96,
+        "dot_stack_bonus": 0.048,
+        "max_dot_stacks": 50
+      },
+      {
+        "name": "取此真相，弃舍表征",
+        "type": "FESTIVITY",
+        "cost": 0,
+        "multiplier": 0.0,
+        "damage_type": "WIND",
+        "description": "使用秘技后，下一次战斗开始时有150%的基础概率使敌方每个单体目标陷入1层奥迹。每次使目标陷入奥迹的基础概率等同于上一次成功使该目标陷入奥迹时基础概率的50%",
+        "energy_gain": 0.0,
+        "battle_points_gain": 0,
+        "break_power": 0,
+        "is_support_skill": true,
+        "support_modifier_name": "取此真相-奥迹"
+      }
+    ]
   }
 ]
