@@ -38,6 +38,10 @@ def check_effect_hit(caster: 'Character', target: 'Character', break_type: 'Brea
     # 这样低数值配置下也能大概率命中
     if effect_hit < 1.0 and effect_res < 1.0:
         return random.random() < 0.9
+    
+    # 当效果命中>=1.0（100%）时，必定命中
+    if effect_hit >= 1.0:
+        return True
 
     denominator = effect_hit + effect_res + 23.0
     if denominator <= 0:

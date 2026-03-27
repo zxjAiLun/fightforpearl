@@ -152,6 +152,8 @@ class TestWindBreak:
     def test_shear_stacks(self):
         """风化：可叠加"""
         player = make_player("三月萤")  # 风
+        player.stat.effect_hit = 1.0  # 确保效果命中=100%
+        player.stat.effect_res = 0.0  # 确保效果抵抗=0%
         enemy = make_enemy("机械兵", [Element.WIND])
         enemy.toughness = 0.0
 
