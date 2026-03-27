@@ -404,7 +404,7 @@
   },
   {
     "name": "不死途",
-    "element": "QUANTUM",
+    "element": "THUNDER",
     "energy_limit": 120,
     "stat": {
       "base_max_hp": 4200,
@@ -427,10 +427,10 @@
       "energy_recovery_rate": 1.0,
       "physical_dmg_pct": 0.0,
       "wind_dmg_pct": 0.0,
-      "thunder_dmg_pct": 0.0,
+      "thunder_dmg_pct": 50.0,
       "fire_dmg_pct": 0.0,
       "ice_dmg_pct": 0.0,
-      "quantum_dmg_pct": 50.0,
+      "quantum_dmg_pct": 0.0,
       "imaginary_dmg_pct": 0.0,
       "physical_res_pct": 0.0,
       "wind_res_pct": 0.0,

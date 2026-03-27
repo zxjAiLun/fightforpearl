@@ -3,31 +3,53 @@
 
 基于 https://starrailstation.com/cn/character/sparxie#skills 数据
 
-角色定位：火属性输出 - 多段攻击和追加攻击
+角色定位：欢愉型 - 火属性，多段攻击
 
 ==============================
 技能
 ==============================
 
-【普攻】魔女的小黑魔法
-- Break 20
-- 对指定敌方单体造成等同于角色50%攻击力的火属性伤害
-
-【战技】魔女的四重罪
+【普攻】哑火了吗
 - Break 30
-- 对随机敌方目标造成4次等同于角色40%攻击力的火属性伤害
-- 每次伤害递减15%
+- 对指定敌方单体造成50% ATK火属性伤害
 
-【终结技】魔女的终夜狂舞
+【强化普攻】百花齐放，胜者独享！
+- 扩散攻击
+- 对指定敌方单体造成50% ATK火属性伤害
+- 对相邻目标造成25% ATK火属性伤害
+
+【战技】尖叫！火花花连线中
+- 开启直播连线，使普攻变为【百花齐放，胜者独享！】
+- 发动【互动陷阱】：使强化普攻伤害倍率提高10%/5%
+- 随机获得礼物：【红红火火】2笑点+2战技点 或 【恍恍惚惚】1笑点
+- 可发动最多20次【互动陷阱】
+
+【终结技】万我狂欢，镜头不要停
 - Break 60
-- 对敌方全体造成3次等同于角色80%攻击力的火属性伤害
+- 获得2个笑点
+- 对敌方全体造成(0.6*欢愉度+30%) ATK的火属性伤害
 
-【被动1】魔女的永燃论
-- 火属性伤害提高12%
+【天赋】幕后花手
+- 火花持有【好活当赏】时：
+- 强化普攻对指定目标造成20%火属性欢愉伤害
+- 对相邻目标造成10%火属性欢愉伤害
+- 每发动1次【互动陷阱】，额外对随机1个目标造成1次10%火属性欢愉伤害
+- 终结技对敌方全体造成24%火属性欢愉伤害
 
-【被动2】魔女的燃命说
-- 每次攻击造成伤害时，额外造成1次等同于角色10%攻击力的火属性伤害
-- 视为追加攻击
+【欢愉技】信号溢出：好戏返场！
+- Break 20/hit
+- 对敌方全体造成25%火属性欢愉伤害
+- 额外造成20次12.5%火属性欢愉伤害（随机单体）
+- 使火花获得2个【爆点】（可抵扣战技点消耗）
+
+==============================
+欢愉机制
+==============================
+
+【笑点】：欢愉角色的资源点
+【好活当赏】：触发天赋强化的条件状态
+【爆点】：可抵扣战技点消耗的点数
+【互动陷阱】：火花战技的核心机制
 """
 
 from src.game.modifier import Modifier, ModifierType, ModifierStacking
@@ -35,46 +57,92 @@ from src.game.models import Character, Element, Skill, SkillType, Passive
 
 
 def create_sparxie_basic_skill() -> Skill:
-    """普攻：魔女的小黑魔法 - 50% ATK"""
+    """普攻：哑火了吗 - 50% ATK"""
     return Skill(
-        name="魔女的小黑魔法",
+        name="哑火了吗",
         type=SkillType.BASIC,
         multiplier=0.50,
         damage_type=Element.FIRE,
-        description="对指定敌方单体造成等同于角色50%攻击力的火属性伤害",
+        description="对指定敌方单体造成50% ATK火属性伤害",
         energy_gain=20.0,
         battle_points_gain=1,
-        break_power=20,
+        break_power=30,
+    )
+
+
+def create_sparxie_enhanced_basic_skill() -> Skill:
+    """强化普攻：百花齐放，胜者独享！- 扩散"""
+    return Skill(
+        name="百花齐放，胜者独享！",
+        type=SkillType.BASIC,
+        multiplier=0.50,
+        secondary_multiplier=0.25,
+        damage_type=Element.FIRE,
+        description="对目标50% ATK，对相邻目标25% ATK",
+        energy_gain=40.0,
+        battle_points_gain=1,
+        break_power=30,
     )
 
 
 def create_sparxie_special_skill() -> Skill:
-    """战技：魔女的四重罪 - 4次攻击"""
+    """战技：尖叫！火花花连线中 - 直播连线"""
     return Skill(
-        name="魔女的四重罪",
+        name="尖叫！火花花连线中",
         type=SkillType.SPECIAL,
         cost=1,
-        multiplier=0.40,
+        multiplier=0.0,
         damage_type=Element.FIRE,
-        description="对随机目标造成4次40%ATK伤害，每次递减15%",
+        description="开启直播连线，使普攻变为强化普攻，发动【互动陷阱】最多20次",
         energy_gain=0.0,
-        break_power=30,
-        ricochet_count=3,  # 4次攻击 = 1次主目标 + 3次弹射
-        ricochet_decay=0.85,
+        break_power=0,
+        is_support_skill=True,
+        support_modifier_name="直播连线",
     )
 
 
 def create_sparxie_ult_skill() -> Skill:
-    """终结技：魔女的终夜狂舞 - 3次AOE"""
+    """终结技：万我狂欢，镜头不要停"""
     return Skill(
-        name="魔女的终夜狂舞",
+        name="万我狂欢，镜头不要停",
         type=SkillType.ULT,
-        multiplier=0.80,
+        multiplier=0.30,  # 基础30% + 欢愉度加成
         damage_type=Element.FIRE,
-        description="对敌方全体造成3次80%ATK伤害",
-        energy_gain=0.0,
+        description="获得2笑点，对敌方全体造成(30%+0.6*欢愉度)% ATK火属性伤害",
+        energy_gain=5.0,
         break_power=60,
         target_count=-1,
+    )
+
+
+def create_sparxie_talent_skill() -> Skill:
+    """天赋：幕后花手 - 强化普攻追加"""
+    return Skill(
+        name="幕后花手",
+        type=SkillType.TALENT,
+        multiplier=0.20,  # 20% + 10%
+        secondary_multiplier=0.10,
+        damage_type=Element.FIRE,
+        description="持有【好活当赏】时，强化普攻追加伤害，每【互动陷阱】+1次追加",
+        energy_gain=0.0,
+        break_power=15,
+        is_follow_up=True,
+    )
+
+
+def create_sparxie_festivity_skill() -> Skill:
+    """欢愉技：信号溢出：好戏返场！"""
+    return Skill(
+        name="信号溢出：好戏返场！",
+        type=SkillType.FESTIVITY,
+        multiplier=0.25,  # 25% + 20次12.5%
+        damage_type=Element.FIRE,
+        description="全体25%伤害，额外20次12.5%随机伤害，获得2【爆点】",
+        energy_gain=5.0,
+        break_power=20,
+        target_count=-1,
+        ricochet_count=20,
+        ricochet_decay=0.0,  # 固定12.5%
     )
 
 
@@ -82,18 +150,25 @@ def create_sparxie_passives() -> list[Passive]:
     """火花的被动技能"""
     return [
         Passive(
-            name="被动：魔女的永燃论",
+            name="甜蜜！笑点签售会",
             trigger=SkillType.ABILITY_PASSIVE,
-            effect_type="fire_dmg_increase",
-            value=0.12,
-            description="火属性伤害提高12%",
+            effect_type="joyfulness_atk_bonus",
+            value=0.05,  # ATK>2000时每超100点欢愉度+5%
+            description="攻击力>2000时，每超100点使欢愉度+5%，最多80%",
         ),
         Passive(
-            name="被动：魔女的燃命说",
+            name="炫目！人设万花筒",
             trigger=SkillType.ABILITY_PASSIVE,
-            effect_type="extra_attack",
-            value=0.10,
-            description="每次攻击额外造成1次10%ATK伤害，视为追加攻击",
+            effect_type="festivity_bonus",
+            value=2.0,  # 额外获得笑点和爆点
+            description="队伍中欢愉角色数量1/2/3时，终结技额外获得2/4/8笑点和1/1/4爆点",
+        ),
+        Passive(
+            name="沸腾！真伪调色盘",
+            trigger=SkillType.ABILITY_PASSIVE,
+            effect_type="crit_dmg_per_laugh",
+            value=0.08,  # 每笑点+8%暴击伤害
+            description="每拥有1笑点，我方全体暴击伤害+8%，最多80%",
         ),
     ]
 
@@ -101,6 +176,9 @@ def create_sparxie_passives() -> list[Passive]:
 def create_all_sparxie_skills() -> list[Skill]:
     return [
         create_sparxie_basic_skill(),
+        create_sparxie_enhanced_basic_skill(),
         create_sparxie_special_skill(),
         create_sparxie_ult_skill(),
+        create_sparxie_talent_skill(),
+        create_sparxie_festivity_skill(),
     ]

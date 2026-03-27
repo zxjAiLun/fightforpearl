@@ -66,6 +66,8 @@ class SkillType(Enum):
     BASIC = auto()           # 普攻
     SPECIAL = auto()         # 战技
     ULT = auto()            # 大招
+    TALENT = auto()          # 天赋
+    FESTIVITY = auto()       # 欢愉技
     FOLLOW_UP = auto()       # 追击
     FALLING_PASSIVE = auto() # 陷入（倒下触发）
     ABILITY_PASSIVE = auto() # 能力（被动）
