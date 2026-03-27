@@ -622,5 +622,60 @@
         "target_count": -1
       }
     ]
+  },
+  {
+    "character": "花火",
+    "skills": [
+      {
+        "name": "独角戏",
+        "type": "BASIC",
+        "cost": 0,
+        "multiplier": 0.5,
+        "damage_type": "QUANTUM",
+        "description": "对指定敌方单体造成50%攻击力的量子属性伤害",
+        "energy_gain": 30.0,
+        "battle_points_gain": 1,
+        "break_power": 30
+      },
+      {
+        "name": "梦游鱼",
+        "type": "SPECIAL",
+        "cost": 1,
+        "multiplier": 0.0,
+        "damage_type": "QUANTUM",
+        "description": "使指定我方单体暴击伤害提高，行动提前50%",
+        "energy_gain": 30.0,
+        "battle_points_gain": 0,
+        "break_power": 0,
+        "is_support_skill": true,
+        "support_modifier_name": "梦游鱼"
+      },
+      {
+        "name": "一人千役",
+        "type": "ULT",
+        "cost": 3,
+        "multiplier": 0.0,
+        "damage_type": "QUANTUM",
+        "description": "为我方恢复4个战技点，使我方全体获得【谜诡】",
+        "energy_gain": 5.0,
+        "battle_points_gain": 0,
+        "break_power": 0,
+        "is_support_skill": true,
+        "support_modifier_name": "谜诡",
+        "target_count": -1
+      },
+      {
+        "name": "叙述性诡计",
+        "type": "TALENT",
+        "cost": 0,
+        "multiplier": 0.0,
+        "damage_type": "QUANTUM",
+        "description": "每消耗1点战技点使我方全体伤害+3%，最多3层持续2回合",
+        "energy_gain": 0.0,
+        "battle_points_gain": 0,
+        "break_power": 0,
+        "is_support_skill": true
+      }
+    ]
   }
 ]
