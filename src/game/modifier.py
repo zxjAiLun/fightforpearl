@@ -58,6 +58,7 @@ class Modifier:
     def_pct: float = 0.0
     spd_pct: float = 0.0      # SPD百分比加成
     hp_pct: float = 0.0
+    hp_flat: int = 0  # 直接增加生命上限
     
     # 战斗属性
     crit_rate_pct: float = 0.0
@@ -237,6 +238,7 @@ class ModifierManager:
             'def_pct': 0.0,
             'spd_pct': 0.0,
             'hp_pct': 0.0,
+            'hp_flat': 0,
             'crit_rate_pct': 0.0,
             'crit_dmg_pct': 0.0,
             'dmg_pct': 0.0,
@@ -258,6 +260,7 @@ class ModifierManager:
             stats['def_pct'] += mod.def_pct
             stats['spd_pct'] += mod.spd_pct
             stats['hp_pct'] += mod.hp_pct
+            stats['hp_flat'] += mod.hp_flat
             stats['crit_rate_pct'] += mod.crit_rate_pct
             stats['crit_dmg_pct'] += mod.crit_dmg_pct
             stats['dmg_pct'] += mod.dmg_pct
