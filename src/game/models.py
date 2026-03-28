@@ -77,6 +77,18 @@ class SkillType(Enum):
     ABILITY_PASSIVE = auto() # 能力（被动）
 
 
+class ActionPriority(Enum):
+    """行动优先级枚举（越高越先执行）"""
+    DEFAULT = 0       # 默认
+    BASIC = 20        # 普攻
+    SPECIAL = 40      # 战技
+    TALENT = 50       # 天赋
+    FOLLOW_UP = 60    # 追击
+    FESTIVITY = 70    # 欢愉技
+    ULT = 80         # 终结技
+    AHA_MOMENT = 100  # 阿哈时刻 / 特殊事件（最高）
+
+
 class TriggerCondition(Enum):
     """追加攻击触发条件类型"""
     NONE = auto()                    # 无条件
@@ -631,6 +643,9 @@ class Skill:
     battle_points_gain: int = 0
     hit_energy_gain: int = 10
     break_power: float = 0.0
+
+    # 行动优先级（越高越先执行）
+    priority: int = 0
 
     # 弹射（Ricochet）技能专用
     # 弹射：攻击一个目标后弹射到其他目标，每次弹射伤害递减

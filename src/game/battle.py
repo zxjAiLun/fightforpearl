@@ -8,6 +8,7 @@ from .models import (
     Character, BattleState, Skill, SkillType, BreakEffectType,
     BreakResult, BreakStatus, Effect, Passive,
 )
+from .action_queue import PriorityActionQueue, QueuedAction
 from .skill import SkillExecutor
 from .damage import calculate_damage, apply_damage, DamageSource, DamageResult
 from .config.battle import FIRST_ROUND_AV, SUBSEQUENT_AV, AV_BASE
@@ -79,6 +80,9 @@ class BattleEngine:
         # 玩家控制模式
         self._player_control_enabled = False
         self._player_input_callback = None  # 玩家输入回调
+        
+        # 优先级行动队列（用于处理插队行动）
+        self._action_queue = PriorityActionQueue()
         
         # 关联角色和战斗状态的引用（用于事件总线获取对手列表）
         for char in state.player_team + state.enemy_team:
@@ -219,7 +223,10 @@ class BattleEngine:
         turn: int,
     ) -> None:
         """
-        处理事件总线触发的追加攻击
+        处理事件总线触发的追加攻击。
+        
+        追加攻击会被加入优先级队列，而不是立即执行。
+        这样可以保证高优先级行动先执行。
         """
         for trigger, targets in triggered:
             fu_skill = Skill(
@@ -227,25 +234,18 @@ class BattleEngine:
                 type=SkillType.FOLLOW_UP,
                 multiplier=trigger.multiplier,
                 damage_type=trigger.damage_type,
+                priority=60,  # 追击优先级 60
             )
             
-            for target in targets:
-                result = calculate_damage(
-                    caster, target,
-                    skill_multiplier=fu_skill.multiplier,
-                    damage_type=fu_skill.damage_type,
-                    damage_source=DamageSource.FOLLOW_UP,
-                    attacker_is_player=not caster.is_enemy,
-                )
-                apply_damage(caster, target, result)
-                
-                self._log(BattleEvent(
-                    turn=turn,
-                    actor=caster,
-                    action="FOLLOW_UP_TRIGGER",
-                    detail=f"{caster.name} 触发追加攻击！对 {target.name} 造成 {result.final_damage} 伤害",
-                    damage_result=result,
-                ))
+            # 将追击加入优先级队列（插队）
+            self.enqueue_preemptive(caster, fu_skill, targets)
+            
+            self._log(BattleEvent(
+                turn=turn,
+                actor=caster,
+                action="FOLLOW_UP_ENQUEUED",
+                detail=f"{caster.name} 触发追加攻击·{trigger.name}，已加入优先级队列",
+            ))
 
     def _trigger_hysilens_barriers(
         self,
@@ -482,6 +482,133 @@ class BattleEngine:
 
     def set_logger(self, cb: Callable[[BattleEvent], None]):
         self._log_callback = cb
+
+    def enqueue_preemptive(self, actor: Character, skill: Skill, targets: list[Character]) -> None:
+        """
+        将行动加入优先级队列（插队）
+        
+        用于高优先级行动（如追击、终结技）打断当前队列。
+        
+        Args:
+            actor: 行动角色
+            skill: 使用的技能
+            targets: 目标列表
+        """
+        from .skill import get_skill_priority
+        priority = get_skill_priority(skill)
+        action = QueuedAction(
+            actor=actor,
+            skill=skill,
+            targets=targets,
+            priority=priority,
+        )
+        self._action_queue.enqueue_preemptive(action)
+    
+    def _get_skill_priority(self, skill: Skill) -> int:
+        """获取技能的优先级"""
+        from .skill import get_skill_priority
+        return get_skill_priority(skill)
+
+    def _process_queued_actions(self) -> bool:
+        """
+        处理优先级队列中的行动。
+        
+        Returns:
+            bool: 是否处理了任何行动
+        """
+        from .damage import calculate_damage, apply_damage, DamageSource
+        
+        processed = False
+        while not self._action_queue.is_empty():
+            action = self._action_queue.dequeue()
+            if action is None:
+                break
+            
+            caster = action.actor
+            skill = action.skill
+            targets = action.targets
+            
+            # 检查角色是否还能行动
+            if not caster.is_alive() or not caster.can_act():
+                continue
+            
+            # 对于追击类技能，直接执行伤害计算（不通过SkillExecutor）
+            if skill.type == SkillType.FOLLOW_UP:
+                results = []
+                attacker_is_player = not caster.is_enemy
+                for target in targets:
+                    result = calculate_damage(
+                        caster, target,
+                        skill_multiplier=skill.multiplier,
+                        damage_type=skill.damage_type,
+                        damage_source=DamageSource.FOLLOW_UP,
+                        attacker_is_player=attacker_is_player,
+                    )
+                    apply_damage(caster, target, result)
+                    results.append((target, result))
+                
+                if not results:
+                    continue
+                
+                processed = True
+                self._log_action_event(caster, skill, results)
+                
+                # 处理伤害和击破
+                for target, result in results:
+                    break_msg = self._try_break(target, caster, skill)
+                    if break_msg:
+                        self._log(BattleEvent(
+                            turn=self._current_turn,
+                            actor=caster,
+                            action="BREAK",
+                            detail=f"{target.name}: {break_msg}",
+                        ))
+                    
+                    if not target.is_alive():
+                        if caster in self.state.player_team:
+                            kill_gain = getattr(caster, 'kill_energy_gain', 10)
+                            caster.add_energy(kill_gain, affected_by_recovery_rate=True)
+                    
+                    target_status = self.state._break_status(target)
+                    if target_status.break_type == BreakEffectType.ENTANGLE:
+                        target_status.entangle_hit_stacks = min(5, target_status.entangle_hit_stacks + 1)
+                        target.entangle_hit_stacks = target_status.entangle_hit_stacks
+                
+                continue
+            
+            # 执行普通技能
+            results = self._skill_executor.execute(skill, caster, targets, self.state)
+            if not results:
+                continue
+            
+            processed = True
+            self._log_action_event(caster, skill, results)
+            
+            # 处理伤害和击破
+            for target, result in results:
+                break_msg = self._try_break(target, caster, skill)
+                if break_msg:
+                    self._log(BattleEvent(
+                        turn=self._current_turn,
+                        actor=caster,
+                        action="BREAK",
+                        detail=f"{target.name}: {break_msg}",
+                    ))
+                
+                if not target.is_alive():
+                    if caster in self.state.player_team:
+                        kill_gain = getattr(caster, 'kill_energy_gain', 10)
+                        caster.add_energy(kill_gain, affected_by_recovery_rate=True)
+                
+                target_status = self.state._break_status(target)
+                if target_status.break_type == BreakEffectType.ENTANGLE:
+                    target_status.entangle_hit_stacks = min(5, target_status.entangle_hit_stacks + 1)
+                    target.entangle_hit_stacks = target_status.entangle_hit_stacks
+            
+            # 追击不再递归触发（避免无限循环），只在主行动中触发
+            # 防止多次插队导致队列爆炸
+        
+        return processed
 
     def _log(self, event: BattleEvent, show_detail: bool = False):
         event.action_value = self._total_action_value
@@ -784,11 +911,17 @@ class BattleEngine:
         energy_before = actor.energy
         bp_before = self.state.shared_battle_points
         
+        # 追击技能特殊处理：显示"触发追击！"
+        is_follow_up = skill.type == SkillType.FOLLOW_UP
+        
         if len(results) > 1:
             total_dmg = sum(r.final_damage for _, r in results)
             target_names = ", ".join(t.name for t, _ in results)
             _, first_result = results[0]
-            detail = f"{actor.name} 使用 {skill.name} 攻击 {target_names}，造成共计 {total_dmg} 伤害"
+            if is_follow_up:
+                detail = f"{actor.name} 触发追击！对 {target_names} 造成 {total_dmg} 伤害"
+            else:
+                detail = f"{actor.name} 使用 {skill.name} 攻击 {target_names}，造成共计 {total_dmg} 伤害"
             if first_result.is_crit:
                 detail += " CRIT!"
             event = BattleEvent(
@@ -804,9 +937,14 @@ class BattleEngine:
             self._log(event)
         else:
             target, result = results[0]
-            detail_parts = [
-                f"{actor.name} 使用 {skill.name} 攻击 {target.name}，造成 {result.final_damage} 伤害"
-            ]
+            if is_follow_up:
+                detail_parts = [
+                    f"{actor.name} 触发追击！对 {target.name} 造成 {result.final_damage} 伤害"
+                ]
+            else:
+                detail_parts = [
+                    f"{actor.name} 使用 {skill.name} 攻击 {target.name}，造成 {result.final_damage} 伤害"
+                ]
             if result.is_crit:
                 detail_parts.append("CRIT!")
             event = BattleEvent(
@@ -849,23 +987,16 @@ class BattleEngine:
                         type=SkillType.FOLLOW_UP,
                         multiplier=rule.multiplier,
                         damage_type=rule.damage_type,
+                        priority=60,  # 追击优先级 60
                     )
-                    for target in follow_up_targets:
-                        result = calculate_damage(
-                            caster, target,
-                            skill_multiplier=follow_up_skill.multiplier,
-                            damage_type=follow_up_skill.damage_type,
-                            damage_source=DamageSource.FOLLOW_UP,
-                            attacker_is_player=not caster.is_enemy,
-                        )
-                        apply_damage(caster, target, result)
+                    # 将追击加入优先级队列（插队）
+                    self.enqueue_preemptive(caster, follow_up_skill, follow_up_targets)
                     
                     self._log(BattleEvent(
                         turn=turn,
                         actor=caster,
-                        action="FOLLOW_UP",
-                        detail=f"{caster.name} 触发追击！",
-                        damage_result=result,
+                        action="FOLLOW_UP_ENQUEUED",
+                        detail=f"{caster.name} 触发追击·{rule.name}，已加入优先级队列",
                     ))
 
     def step_back(self) -> bool:
@@ -950,6 +1081,9 @@ class BattleEngine:
                 alive = [c for c in self.state.player_team + self.state.enemy_team if c.is_alive()]
                 if not alive:
                     break
+                
+                # 先处理优先级队列中的行动（追击、插队等）
+                self._process_queued_actions()
                 
                 current_time = self._get_current_time()
                 next_time = self._get_next_action_time(current_time)
@@ -1107,6 +1241,9 @@ class BattleEngine:
             self._apply_hysilens_ult_barrier(actor, results, turn_counter)
         
         self._try_follow_up(actor, skill, results, turn_counter)
+        
+        # 处理优先级队列中的行动（追击、插队等）
+        self._process_queued_actions()
 
 
 def create_default_character(name: str, element=None) -> Character:

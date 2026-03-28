@@ -2,10 +2,42 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Optional
 
-from .models import Character, Skill, SkillType, Element, Passive, Effect, BreakEffectType, ELEMENT_BREAK_MAP, DamageSource, BattleState
+from .models import Character, Skill, SkillType, Element, Passive, Effect, BreakEffectType, ELEMENT_BREAK_MAP, DamageSource, BattleState, ActionPriority
 
 if TYPE_CHECKING:
     from .damage import DamageResult
+
+
+def get_skill_priority(skill: Skill) -> int:
+    """
+    根据技能类型返回优先级。
+    
+    优先级参考：
+    - 100: 阿哈时刻 / 特殊事件（最高）
+    - 80:  终结技 (ULT)
+    - 70:  欢愉技 (FESTIVITY)
+    - 60:  追击 (FOLLOW_UP)
+    - 50:  天赋 (TALENT)
+    - 40:  战技 (SPECIAL)
+    - 20:  普攻 (BASIC)
+    - 0:   默认
+    
+    如果技能已设置 priority 字段（>0），则使用技能自身的优先级。
+    """
+    # 技能自身设置的优先级优先
+    if hasattr(skill, 'priority') and skill.priority > 0:
+        return skill.priority
+    
+    # 根据技能类型返回默认优先级
+    priority_map = {
+        SkillType.BASIC: ActionPriority.BASIC.value,
+        SkillType.SPECIAL: ActionPriority.SPECIAL.value,
+        SkillType.ULT: ActionPriority.ULT.value,
+        SkillType.FOLLOW_UP: ActionPriority.FOLLOW_UP.value,
+        SkillType.TALENT: ActionPriority.TALENT.value,
+        SkillType.FESTIVITY: ActionPriority.FESTIVITY.value,
+    }
+    return priority_map.get(skill.type, ActionPriority.DEFAULT.value)
 
 
 class SkillExecutor:
