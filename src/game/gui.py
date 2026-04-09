@@ -1277,28 +1277,294 @@ def start_gui_battle(battle_state) -> 'BattleGUI':
     return gui
 
 
+class MainMenuButton:
+    def __init__(self, x: int, y: int, width: int, height: int, text: str, color: tuple, hover_color: tuple = None, callback=None):
+        self.rect = pygame.Rect(x, y, width, height)
+        self.text = text
+        self.color = color
+        self.hover_color = hover_color or color
+        self.is_hovered = False
+        self.callback = callback
+
+    def handle_event(self, event: pygame.event.Event) -> bool:
+        if event.type == pygame.MOUSEMOTION:
+            self.is_hovered = self.rect.collidepoint(event.pos)
+            return False
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            if self.rect.collidepoint(event.pos):
+                if self.callback:
+                    self.callback()
+                return True
+        return False
+
+    def draw(self, screen: pygame.Surface, style: GUIStyle) -> None:
+        color = self.hover_color if self.is_hovered else self.color
+        pygame.draw.rect(screen, color, self.rect, border_radius=12)
+        pygame.draw.rect(screen, WHITE, self.rect, 2, border_radius=12)
+        text_surface = style.font_large.render(self.text, True, WHITE)
+        text_rect = text_surface.get_rect(center=self.rect.center)
+        screen.blit(text_surface, text_rect)
+
+
+class MainMenu:
+    """主菜单"""
+
+    def __init__(self, screen: pygame.Surface, style: GUIStyle):
+        self.screen = screen
+        self.style = style
+        self.running = True
+        self.selected_option: Optional[str] = None
+
+        button_width = 280
+        button_height = 60
+        button_spacing = 20
+        center_x = SCREEN_WIDTH // 2 - button_width // 2
+        start_y = SCREEN_HEIGHT // 2 - 60
+
+        self.buttons = [
+            MainMenuButton(
+                center_x, start_y,
+                button_width, button_height,
+                "开始战斗",
+                BLUE,
+                (100, 140, 255),
+                lambda: self._select("battle"),
+            ),
+            MainMenuButton(
+                center_x, start_y + button_height + button_spacing,
+                button_width, button_height,
+                "模拟宇宙",
+                PURPLE,
+                (200, 130, 255),
+                lambda: self._select("universe"),
+            ),
+            MainMenuButton(
+                center_x, start_y + (button_height + button_spacing) * 2,
+                button_width, button_height,
+                "角色图鉴",
+                CYAN,
+                (130, 220, 220),
+                lambda: self._select("codex"),
+            ),
+        ]
+
+    def _select(self, option: str) -> None:
+        self.selected_option = option
+        self.running = False
+
+    def handle_events(self) -> bool:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                self.running = False
+                self.selected_option = None
+                return False
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    self.running = False
+                    self.selected_option = None
+                    return False
+            for button in self.buttons:
+                button.handle_event(event)
+        return True
+
+    def draw(self) -> None:
+        self.screen.fill((15, 15, 25))
+
+        # 标题
+        title = self.style.font_large.render("Fight for Pearl", True, YELLOW)
+        title_rect = title.get_rect(center=(SCREEN_WIDTH // 2, 150))
+        self.screen.blit(title, title_rect)
+
+        subtitle = self.style.font.render("v1.0", True, GRAY)
+        subtitle_rect = subtitle.get_rect(center=(SCREEN_WIDTH // 2, 190))
+        self.screen.blit(subtitle, subtitle_rect)
+
+        # 绘制按钮
+        for button in self.buttons:
+            button.draw(self.screen, self.style)
+
+        # 底部提示
+        hint = self.style.font_small.render("Press ESC to quit", True, DARK_GRAY)
+        hint_rect = hint.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT - 30))
+        self.screen.blit(hint, hint_rect)
+
+        pygame.display.flip()
+
+
+class CodexView:
+    """角色图鉴视图"""
+
+    def __init__(self, screen: pygame.Surface, style: GUIStyle):
+        self.screen = screen
+        self.style = style
+        self.running = True
+        self.scroll_offset = 0
+        self.max_display = 8
+
+        from .codex import get_codex
+        self.codex = get_codex()
+        self.entries = self.codex.get_all_entries()
+
+    def handle_events(self) -> bool:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                self.running = False
+                return False
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    self.running = False
+                    return False
+                if event.key == pygame.K_UP:
+                    self.scroll_offset = max(0, self.scroll_offset - 1)
+                    return True
+                if event.key == pygame.K_DOWN:
+                    max_scroll = max(0, len(self.entries) - self.max_display)
+                    self.scroll_offset = min(max_scroll, self.scroll_offset + 1)
+                    return True
+        return True
+
+    def draw(self) -> None:
+        self.screen.fill((15, 15, 25))
+
+        # 标题
+        title = self.style.font_large.render("角色图鉴", True, CYAN)
+        self.screen.blit(title, (SCREEN_WIDTH // 2 - 60, 20))
+
+        discovered_count = self.codex.get_discovered_count()
+        total_count = len(self.entries)
+        count_text = self.style.font.render(f"已发现: {discovered_count}/{total_count}", True, YELLOW)
+        self.screen.blit(count_text, (SCREEN_WIDTH // 2 - 80, 55))
+
+        # 绘制条目
+        y = 90
+        visible_entries = self.entries[self.scroll_offset:self.scroll_offset + self.max_display]
+
+        for entry in visible_entries:
+            is_discovered = self.codex.is_discovered(entry.id)
+
+            # 条目背景
+            bg_color = (40, 40, 55) if is_discovered else (30, 30, 40)
+            entry_rect = pygame.Rect(40, y, SCREEN_WIDTH - 80, 70)
+            pygame.draw.rect(self.screen, bg_color, entry_rect, border_radius=8)
+            pygame.draw.rect(self.screen, CYAN if is_discovered else DARK_GRAY, entry_rect, 1, border_radius=8)
+
+            # 名字
+            name_text = entry.name if is_discovered else "???"
+            name_color = WHITE if is_discovered else GRAY
+            name = self.style.font.render(name_text, True, name_color)
+            self.screen.blit(name, (55, y + 8))
+
+            # 元素和命途
+            element_text = entry.element if is_discovered else "???"
+            path_text = entry.path if is_discovered else "???"
+            ep = self.style.font_small.render(f"[{element_text}] {path_text}", True, ELEMENT_COLORS.get(entry.element, GRAY) if is_discovered else GRAY)
+            self.screen.blit(ep, (55, y + 32))
+
+            # 描述
+            if is_discovered:
+                desc = entry.description[:60] + "..." if len(entry.description) > 60 else entry.description
+                desc_text = self.style.font_small.render(desc, True, GRAY)
+                self.screen.blit(desc_text, (55, y + 50))
+            else:
+                undiscovered = self.style.font_small.render("尚未发现此角色", True, DARK_GRAY)
+                self.screen.blit(undiscovered, (55, y + 50))
+
+            y += 78
+
+        # 滚动提示
+        if len(self.entries) > self.max_display:
+            scroll_hint = self.style.font_small.render(f"UP/DOWN: Scroll ({self.scroll_offset}/{max(0, len(self.entries) - self.max_display)})", True, GRAY)
+            self.screen.blit(scroll_hint, (SCREEN_WIDTH // 2 - 150, SCREEN_HEIGHT - 30))
+
+        # 返回提示
+        back_hint = self.style.font_small.render("ESC: Return to Menu", True, DARK_GRAY)
+        self.screen.blit(back_hint, (20, SCREEN_HEIGHT - 30))
+
+        pygame.display.flip()
+
+
+def run_main_menu() -> Optional[str]:
+    """运行主菜单，返回选择的选项"""
+    pygame.init()
+    screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+    pygame.display.set_caption("Fight for Pearl - Main Menu")
+    clock = pygame.time.Clock()
+
+    style = GUIStyle()
+    style.init_fonts()
+
+    menu = MainMenu(screen, style)
+
+    while menu.running:
+        menu.handle_events()
+        menu.draw()
+        clock.tick(FPS)
+
+    pygame.quit()
+    return menu.selected_option
+
+
+def run_codex_view() -> None:
+    """运行角色图鉴"""
+    pygame.init()
+    screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+    pygame.display.set_caption("Fight for Pearl - Character Codex")
+    clock = pygame.time.Clock()
+
+    style = GUIStyle()
+    style.init_fonts()
+
+    codex_view = CodexView(screen, style)
+
+    while codex_view.running:
+        codex_view.handle_events()
+        codex_view.draw()
+        clock.tick(FPS)
+
+    pygame.quit()
+
+
+def run_simulated_universe_tui() -> None:
+    """运行模拟宇宙TUI界面"""
+    from .simulated_universe.tui import main as su_main
+    su_main()
+
+
 def main():
-    from .tui import create_player_team
-    from .battle import BattleState, create_enemy
-    from .models import Element
-    
-    player_team = create_player_team()
-    
-    enemy1 = create_enemy(
-        name="Enemy1",
-        weakness_elements=[Element.THUNDER, Element.FIRE],
-        hp_units=10,
-    )
-    
-    battle_state = BattleState(
-        player_team=player_team,
-        enemy_team=[enemy1],
-        turn=1,
-        shared_battle_points=3,
-        shared_battle_points_limit=5,
-    )
-    
-    start_gui_battle(battle_state)
+    # 显示主菜单
+    choice = run_main_menu()
+
+    if choice is None:
+        return
+
+    if choice == "battle":
+        from .tui import create_player_team
+        from .battle import BattleState, create_enemy
+        from .models import Element
+
+        player_team = create_player_team()
+
+        enemy1 = create_enemy(
+            name="Enemy1",
+            weakness_elements=[Element.THUNDER, Element.FIRE],
+            hp_units=10,
+        )
+
+        battle_state = BattleState(
+            player_team=player_team,
+            enemy_team=[enemy1],
+            turn=1,
+            shared_battle_points=3,
+            shared_battle_points_limit=5,
+        )
+
+        start_gui_battle(battle_state)
+
+    elif choice == "universe":
+        run_simulated_universe_tui()
+
+    elif choice == "codex":
+        run_codex_view()
 
 
 if __name__ == "__main__":
