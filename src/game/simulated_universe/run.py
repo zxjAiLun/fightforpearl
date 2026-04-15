@@ -1,6 +1,6 @@
 """模拟宇宙单次运行状态"""
 from dataclasses import dataclass, field
-from typing import List, Optional
+from typing import List, Optional, TYPE_CHECKING
 
 from .cards import CardDeck, CardType, UniverseCard
 from .events import UniverseEvent
@@ -8,10 +8,15 @@ from .blessings import Blessing, PathType
 from .curios import Curio
 from .equations import Equation, get_available_equations
 
+if TYPE_CHECKING:
+    from . import DifficultyLevel
+
 
 @dataclass
 class UniverseRun:
     """模拟宇宙单次运行"""
+    # 难度
+    difficulty_level: "DifficultyLevel" = None  # type: ignore[assignment]
     # 进度
     current_floor: int = 1
     total_floors: int = 8  # 总层数
@@ -40,9 +45,12 @@ class UniverseRun:
     # 当前打出的卡牌
     current_card: Optional[UniverseCard] = None
 
-    def init_deck(self, difficulty: int = 1):
+    def init_deck(self, difficulty: int = 1, difficulty_level = None):
         """初始化卡牌堆"""
         self.card_deck = CardDeck(difficulty=difficulty)
+        if difficulty_level is not None:
+            self.difficulty_level = difficulty_level
+            self.total_floors = difficulty_level.total_floors
 
     def draw_hand(self, count: int = 3) -> List[UniverseCard]:
         """抽 count 张手牌"""

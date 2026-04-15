@@ -247,7 +247,7 @@ class TestSimulatedUniverse:
 
     def test_blessing_selection_flow(self):
         """测试祝福选择流程"""
-        su = SimulatedUniverse()
+        su = SimulatedUniverse(difficulty=2)  # 普通难度：3个祝福选项
         su.start_new_run()
 
         # 一直抽卡直到抽到祝福卡

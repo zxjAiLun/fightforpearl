@@ -4,3 +4,12 @@ __pycache__/
 .venv/
 *.egg-info/
 .pytest_cache/
+uv.lock
+battle_log.json
+crawl_lightcones.py
+
+# Development artifacts
+.trae/
+EVALUATION.md
+PROJECT.md
+SPEC.md

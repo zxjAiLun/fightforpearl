@@ -7,6 +7,7 @@ from .blessings import Blessing, BLESSING_POOL, PathType
 from .curios import Curio, CURIO_POOL
 from .equations import Equation, EQUATION_POOL
 from .cards import CardDeck, CardType, UniverseCard, INITIAL_CARD_POOL
+from .difficulty import DifficultyLevel
 
 __all__ = [
     "SimulatedUniverse",
@@ -26,4 +27,5 @@ __all__ = [
     "CardType",
     "UniverseCard",
     "INITIAL_CARD_POOL",
+    "DifficultyLevel",
 ]

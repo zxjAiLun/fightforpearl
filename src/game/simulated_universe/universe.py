@@ -6,19 +6,29 @@ from .cards import CardDeck, CardType, UniverseCard
 from .events import EventType
 from .blessings import Blessing, get_random_blessings
 from .curios import CURIO_POOL
+from .difficulty import DifficultyLevel
 
 
 class SimulatedUniverse:
     """模拟宇宙主类"""
 
     def __init__(self, difficulty: int = 1):
-        self.difficulty = difficulty
+        self.difficulty = difficulty  # 保持整数以兼容旧代码
+        self._difficulty_level = DifficultyLevel(difficulty)
         self.current_run: UniverseRun | None = None
+
+    @property
+    def difficulty_label(self) -> str:
+        return self._difficulty_level.label
+
+    @property
+    def enemy_scale(self) -> float:
+        return self._difficulty_level.enemy_scale
 
     def start_new_run(self) -> UniverseRun:
         """开始新的运行"""
         self.current_run = UniverseRun()
-        self.current_run.init_deck(difficulty=self.difficulty)
+        self.current_run.init_deck(difficulty=self.difficulty, difficulty_level=self._difficulty_level)
         return self.current_run
 
     def get_current_state(self) -> dict:
@@ -39,6 +49,9 @@ class SimulatedUniverse:
             "is_failed": run.is_failed,
             "map_progress": f"{run.current_floor}/{run.total_floors}",
             "deck_status": deck_status,
+            "difficulty": self.difficulty,
+            "difficulty_label": self._difficulty_level.label,
+            "enemy_scale": self._difficulty_level.enemy_scale,
         }
 
     def draw_hand(self) -> dict:
@@ -88,21 +101,26 @@ class SimulatedUniverse:
             "event": event.name,
             "type": event.type.value,
             "description": event.description,
+            "enemy_scale": self._difficulty_level.enemy_scale,
         }
 
         if event.type == EventType.BATTLE:
             result["action"] = "battle"
             result["enemies"] = event.enemies
+            result["enemy_scale"] = self._difficulty_level.enemy_scale
         elif event.type == EventType.ELITE:
             result["action"] = "battle"
             result["enemies"] = event.enemies
-            result["note"] = "精英战斗，难度较高"
+            result["note"] = f"精英战斗，难度较高（敌人强化+{(self.difficulty - 1) * 20}%）"
+            result["enemy_scale"] = self._difficulty_level.enemy_scale
         elif event.type == EventType.BOSS:
             result["action"] = "boss_battle"
             result["enemies"] = event.enemies
+            result["enemy_scale"] = self._difficulty_level.enemy_scale
         elif event.type == EventType.BLESSING:
             result["action"] = "choose_blessing"
-            blessings = get_random_blessings(3)
+            blessing_count = self._difficulty_level.blessing_count
+            blessings = get_random_blessings(blessing_count)
             result["options"] = [
                 {
                     "index": i,
